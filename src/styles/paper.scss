@@ -270,6 +270,10 @@ html:has(#{$root}:hover) {
   grid-template-areas: "content";
   // Keeps the pages' z-index inside the stack.
   isolation: isolate;
+  // The stack takes its width from where it sits, never from its pages. As a grid or flex item
+  // with an aspect-ratio its automatic minimum would be its content's height carried through the
+  // ratio, and the fan's percentage margin below adds to that, so it ran past its container.
+  min-width: 0;
 
   // A sideways swipe over the stack turns its pages, so the browser mustn't spend it panning.
   // Vertical is left to the browser: the page still scrolls under a finger that means to scroll,
