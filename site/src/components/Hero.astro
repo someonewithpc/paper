@@ -1,0 +1,308 @@
+---
+import { PaperStack } from '@hsal/paper/astro';
+
+import { sizes } from '../lib/sizes';
+import CopyCommand from './CopyCommand.astro';
+
+const surfaces = [undefined, 'var(--blueprint)', 'var(--graph)', undefined, 'var(--kraft)'];
+---
+
+<section class="hero wrap" aria-labelledby="hero-title">
+  <div class="hero-text">
+    <h1 id="hero-title">Pages you turn by folding the corner</h1>
+    <p class="lead">
+      A JavaScript library for a stack of paper pages with a dog-ear in the corner. Drag it past the middle and
+      the page folds over to the back. It also makes books, where a leaf curls over the spine.
+    </p>
+    <CopyCommand command="npm install @hsal/paper" />
+    <ul class="facts">
+      <li>{sizes.script} of JavaScript and {sizes.styles} of CSS, gzipped</li>
+      <li>No dependencies</li>
+      <li>Components for 5 frameworks, plus <code>&lt;paper-stack&gt;</code> and <code>&lt;paper-book&gt;</code></li>
+      <li>A scroll-snap carousel when JavaScript is off</li>
+    </ul>
+  </div>
+
+  <figure class="hero-figure">
+    <div class="hero-paper">
+      <PaperStack id="hero-stack" label="Sample pages" class="hero-stack" surfaces={surfaces}>
+        <section class="sheet">
+          <h2>A page is any element</h2>
+          <p>This one is a <code>&lt;section&gt;</code> with a heading and a paragraph. The stack makes a page of each child of its root.</p>
+          <p class="folio">1 of 5</p>
+        </section>
+        <section class="sheet sheet-blueprint">
+          <h2>Each page can have its own paper</h2>
+          <p>This page sets its surface to blue. Fold the corner and the back of the flap is blue too.</p>
+          <svg class="crease" viewBox="0 0 160 80" aria-hidden="true">
+            <rect x="1" y="1" width="158" height="78" rx="2" />
+            <path class="crease-line" d="M118 79 L159 58" />
+            <path class="flap" d="M118 79 L159 58 L136 52 Z" />
+          </svg>
+          <p class="folio">2 of 5</p>
+        </section>
+        <section class="sheet sheet-graph">
+          <h2>Turned pages pile up above</h2>
+          <p>Their edges show along the top. Grab the folded-back corner at the top left and drag to bring the last one back.</p>
+          <p class="folio">3 of 5</p>
+        </section>
+        <section class="sheet">
+          <h2>Other ways to turn</h2>
+          <ul>
+            <li>Focus the stack and press <kbd>&larr;</kbd> or <kbd>&rarr;</kbd></li>
+            <li>Scroll sideways with a wheel or a trackpad</li>
+            <li>Swipe with a finger or a pen</li>
+            <li>Call <code>next()</code> or <code>prev()</code></li>
+          </ul>
+          <p class="folio">4 of 5</p>
+        </section>
+        <section class="sheet sheet-kraft">
+          <h2>The last page wraps around</h2>
+          <p>Turn this one and the first page comes back. Set <code>wrap</code> to <code>false</code> to stop here instead.</p>
+          <p class="folio">5 of 5</p>
+        </section>
+      </PaperStack>
+      <div class="dim dim-x" aria-hidden="true"><span>2 cm</span></div>
+      <div class="dim dim-y" aria-hidden="true"><span>1 cm</span></div>
+      <p class="pencil-note" aria-hidden="true">
+        <svg viewBox="0 0 48 28">
+          <path d="M3 25 C 12 24, 26 20, 35 12 C 38.5 9, 40.5 6.5, 42.5 3.6" />
+          <path d="M34.5 4.4 L42.7 3.2 M44.1 11.2 L42.8 3.5" />
+        </svg>
+        Drag this corner
+      </p>
+    </div>
+    <figcaption>
+      Five pages in a <code>&lt;PaperStack&gt;</code> from <code>@hsal/paper/astro</code>. The dog-ear rests at its default size, 2&nbsp;cm by 1&nbsp;cm, the same as the squares on the mat.
+    </figcaption>
+  </figure>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    gap: 2.5rem;
+    padding-block: 1.5rem 0;
+  }
+
+  @media (min-width: 64rem) {
+    .hero {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      align-items: start;
+      gap: 3.5rem;
+      padding-block-start: 3rem;
+    }
+  }
+
+  .hero-text {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 34rem;
+  }
+
+  h1 {
+    font-size: clamp(3rem, 1.6rem + 6.4vw, 5.75rem);
+    font-stretch: 68%;
+    font-weight: 820;
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+  }
+
+  .lead {
+    font-size: 1.1875rem;
+    line-height: 1.55;
+  }
+
+  .facts {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.9375rem;
+    color: var(--mat-ink-soft);
+  }
+
+  .facts code {
+    white-space: nowrap;
+  }
+
+  .facts li {
+    padding-left: 1.1rem;
+    background: linear-gradient(var(--mat-ink-soft), var(--mat-ink-soft)) 0 0.78em / 0.55rem 1.5px no-repeat;
+  }
+
+  .hero-figure {
+    margin: 0;
+    display: grid;
+    gap: 3.75rem;
+    min-width: 0;
+  }
+
+  .hero-paper {
+    position: relative;
+    margin-right: 2.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .hero-paper :global(.hero-stack) {
+    --paper-splay-room: 0px;
+
+    aspect-ratio: 297 / 210;
+  }
+
+  .sheet {
+    position: relative;
+    container-type: inline-size;
+    color: var(--ink);
+  }
+
+  .sheet > * {
+    margin-inline: 7cqi;
+  }
+
+  .sheet h2 {
+    margin-top: 7cqi;
+    font-size: clamp(1.25rem, 6.6cqi, 2.5rem);
+    font-stretch: 74%;
+  }
+
+  .sheet p,
+  .sheet ul {
+    margin-top: 3cqi;
+    max-width: 30em;
+    font-size: clamp(0.8125rem, 3.3cqi, 1.125rem);
+    line-height: 1.5;
+  }
+
+  .sheet ul {
+    display: grid;
+    gap: 0.25em;
+    padding-left: 1.1em;
+  }
+
+  .sheet .folio {
+    position: absolute;
+    left: 0;
+    bottom: 5cqi;
+    margin: 0 7cqi;
+    font-family: var(--font-display);
+    font-size: clamp(0.6875rem, 2.4cqi, 0.875rem);
+    color: var(--ink-soft);
+  }
+
+  .sheet-blueprint {
+    --ink: var(--blueprint-ink);
+    --ink-soft: rgb(233 240 251 / 0.75);
+  }
+
+  .sheet-blueprint :not(pre) > code {
+    background: rgb(255 255 255 / 0.14);
+  }
+
+  .crease {
+    display: block;
+    width: 34cqi;
+    margin-top: 4cqi;
+    fill: none;
+    stroke: var(--blueprint-ink);
+    stroke-width: 1;
+  }
+
+  .crease .crease-line {
+    stroke-dasharray: 4 3;
+  }
+
+  .crease .flap {
+    fill: rgb(255 255 255 / 0.18);
+  }
+
+  .sheet-graph {
+    background:
+      linear-gradient(to right, light-dark(rgb(31 79 143 / 0.16), rgb(156 192 255 / 0.14)) 1px, transparent 1px) 0 0 / 0.5cm 0.5cm,
+      linear-gradient(to bottom, light-dark(rgb(31 79 143 / 0.16), rgb(156 192 255 / 0.14)) 1px, transparent 1px) 0 0 / 0.5cm 0.5cm,
+      var(--paper-surface);
+  }
+
+  .dim {
+    position: absolute;
+    color: var(--pencil);
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .dim-x {
+    top: calc(100% + 1.5rem);
+    right: 0;
+    width: 2cm;
+    height: 0.625rem;
+    border-inline: 1.5px solid;
+    background: linear-gradient(currentcolor, currentcolor) center / 100% 1.5px no-repeat;
+  }
+
+  .dim-x span {
+    position: absolute;
+    top: calc(100% + 0.3rem);
+    left: 50%;
+    translate: -50% 0;
+    white-space: nowrap;
+  }
+
+  .dim-y {
+    left: calc(100% + 0.5rem);
+    bottom: 0;
+    width: 0.625rem;
+    height: 1cm;
+    border-block: 1.5px solid;
+    background: linear-gradient(currentcolor, currentcolor) center / 1.5px 100% no-repeat;
+  }
+
+  .dim-y span {
+    position: absolute;
+    bottom: calc(100% + 0.35rem);
+    left: 50%;
+    translate: -50% 0;
+    white-space: nowrap;
+  }
+
+  .pencil-note {
+    position: absolute;
+    top: calc(100% + 1.75rem);
+    right: calc(2cm + 0.75rem);
+    display: flex;
+    align-items: flex-end;
+    flex-direction: row-reverse;
+    gap: 0.25rem;
+    margin: 0;
+    color: var(--pencil);
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    font-stretch: 90%;
+    white-space: nowrap;
+  }
+
+  .pencil-note svg {
+    width: 2.25rem;
+    margin-bottom: 0.35rem;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+  }
+
+  @media (scripting: none) {
+    .dim,
+    .pencil-note {
+      display: none;
+    }
+  }
+
+  figcaption {
+    max-width: 34rem;
+    font-size: 0.9375rem;
+    color: var(--mat-ink-soft);
+  }
+</style>

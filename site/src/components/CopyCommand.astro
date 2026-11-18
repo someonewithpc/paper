@@ -1,0 +1,57 @@
+---
+interface Props {
+  command: string;
+}
+
+const { command } = Astro.props;
+---
+
+<div class="copy-command sheet-paper">
+  <code>{command}</code>
+  <button class="copy" type="button" data-copy={command} hidden>Copy</button>
+</div>
+
+<style>
+  .copy-command {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    max-width: 24rem;
+    padding: 0.4rem 0.4rem 0.4rem 0.9rem;
+  }
+
+  code {
+    font-size: 0.9375rem;
+    background: none;
+    padding: 0;
+  }
+
+  .copy {
+    min-height: 2.25rem;
+    padding: 0.2rem 0.75rem;
+    border: 1px solid var(--paper-edge);
+    border-radius: 3px;
+    background: transparent;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .copy:hover {
+    border-color: currentcolor;
+  }
+</style>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('button[data-copy]')) {
+    if (!navigator.clipboard) continue;
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(button.dataset['copy'] ?? '');
+      button.textContent = 'Copied';
+      setTimeout(() => (button.textContent = 'Copy'), 1600);
+    });
+  }
+</script>
