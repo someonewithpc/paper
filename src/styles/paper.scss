@@ -728,6 +728,9 @@ html:has(#{$root}:hover) {
         --paper-fold-back-y: inherit;
         --paper-fold-back-rest-x: inherit;
         --paper-fold-back-rest-y: inherit;
+        // The wire reads the pin one level further down, so it has to pass through here.
+        --paper-pin-x: inherit;
+        --paper-pin-y: inherit;
         position: absolute;
         inset: 0;
         pointer-events: none;
