@@ -1,0 +1,36 @@
+---
+import { links } from '../lib/links';
+---
+
+<header class="masthead wrap">
+  <a class="wordmark" href="/">@hsal/paper</a>
+  <nav aria-label="Project">
+    <a href={links.github}>GitHub</a>
+    <a href={links.npm}>npm</a>
+  </nav>
+</header>
+
+<style>
+  .masthead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1.25rem;
+    font-family: var(--font-display);
+  }
+
+  .wordmark {
+    font-size: 1.125rem;
+    font-weight: 700;
+    font-stretch: 88%;
+    text-decoration: none;
+  }
+
+  nav {
+    display: flex;
+    gap: 1.25rem;
+    font-size: 0.9375rem;
+    font-weight: 560;
+  }
+</style>

@@ -1,0 +1,236 @@
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/literata/opsz.css';
+
+:root {
+  color-scheme: light dark;
+
+  --mat: light-dark(#d8e2d3, #142520);
+  --mat-line: light-dark(#c3d1bd, #1d332a);
+  --mat-line-strong: light-dark(#a3b89c, #2b4a3c);
+  --mat-ink: light-dark(#17291f, #d3e2d8);
+  --mat-ink-soft: light-dark(#3f5749, #9db6a8);
+  --paper: light-dark(#fbfbf7, #232729);
+  --paper-edge: light-dark(#c9cfc4, #3a4144);
+  --ink: light-dark(#1b2130, #e3e5e0);
+  --ink-soft: light-dark(#545c6c, #aab0b2);
+  --pencil: light-dark(#ab271d, #ff9a8c);
+  --blue: light-dark(#1f4f8f, #9cc0ff);
+  --blueprint: light-dark(#1f4f8f, #173a69);
+  --blueprint-ink: #e9f0fb;
+  --kraft: light-dark(#d8c3a0, #4a3d2a);
+  --cloth: light-dark(#2d5a48, #1d3e31);
+  --cloth-ink: #e8efe9;
+  --graph: light-dark(#d5e1ec, #2f3a44);
+  --contact: light-dark(rgb(23 41 31 / 0.22), rgb(0 0 0 / 0.5));
+
+  --font-display: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+  --font-text: 'Literata Variable', 'Literata', Georgia, serif;
+  --font-code: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+
+  --gutter: 16px;
+  --measure: 36rem;
+  --wide: 78rem;
+
+  --paper-sheet: var(--paper);
+  --paper-ink: var(--ink);
+  --paper-ink-faint: var(--ink-soft);
+  --paper-accent: var(--pencil);
+  --paper-line: light-dark(rgb(27 33 48 / 0.18), rgb(255 255 255 / 0.16));
+  --paper-control-surface: var(--paper);
+  --paper-radius: 3px;
+
+  --astro-code-foreground: var(--ink);
+  --astro-code-background: transparent;
+  --astro-code-token-keyword: light-dark(#8a2a6e, #f0a6d8);
+  --astro-code-token-string: light-dark(#2f6a2a, #a9d99a);
+  --astro-code-token-string-expression: light-dark(#2f6a2a, #a9d99a);
+  --astro-code-token-comment: var(--ink-soft);
+  --astro-code-token-constant: var(--blue);
+  --astro-code-token-function: light-dark(#7a4a00, #ffcf7a);
+  --astro-code-token-parameter: var(--ink);
+  --astro-code-token-punctuation: var(--ink-soft);
+  --astro-code-token-link: var(--blue);
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --gutter: 2.5rem;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: clip;
+  color: var(--mat-ink);
+  background-color: var(--mat);
+  background-image:
+    linear-gradient(to right, var(--mat-line-strong) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--mat-line-strong) 1px, transparent 1px),
+    linear-gradient(to right, var(--mat-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--mat-line) 1px, transparent 1px);
+  background-size: 5cm 5cm, 5cm 5cm, 1cm 1cm, 1cm 1cm;
+  font-family: var(--font-text);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  font-optical-sizing: auto;
+}
+
+@media (min-width: 48rem) {
+  body {
+    font-size: 1.125rem;
+  }
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 760;
+  line-height: 1;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: clamp(2rem, 1.4rem + 2.6vw, 3rem);
+  font-stretch: 78%;
+  letter-spacing: -0.005em;
+}
+
+h3 {
+  font-size: 1.3125rem;
+  font-stretch: 92%;
+  font-weight: 700;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--pencil);
+  outline-offset: 3px;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--font-code);
+  font-size: 0.875em;
+}
+
+:not(pre) > code {
+  padding: 0.05em 0.25em;
+  border-radius: 2px;
+  background: light-dark(rgb(23 41 31 / 0.08), rgb(255 255 255 / 0.08));
+}
+
+kbd {
+  padding: 0 0.3em;
+  border: 1px solid currentcolor;
+  border-bottom-width: 2px;
+  border-radius: 3px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.wrap {
+  width: min(100% - 2 * var(--gutter), var(--wide));
+  margin-inline: auto;
+}
+
+.section {
+  padding-block: clamp(3.5rem, 2rem + 6vw, 7rem) 0;
+}
+
+.section-head {
+  display: grid;
+  gap: 1rem;
+  max-width: var(--measure);
+  margin-bottom: 2rem;
+}
+
+.section-head p {
+  color: var(--mat-ink);
+}
+
+.sheet-paper {
+  color: var(--ink);
+  background: var(--paper);
+  border-radius: 3px;
+  box-shadow: 0 1px 0 var(--paper-edge), 0 2px 3px -1px var(--contact);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.9rem;
+  border: 1.5px solid currentcolor;
+  border-radius: 3px;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: light-dark(rgb(27 33 48 / 0.06), rgb(255 255 255 / 0.08));
+}
+
+.button:active {
+  translate: 0 1px;
+}
+
+.astro-code {
+  margin: 0;
+  padding: 1rem 1.125rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  tab-size: 2;
+}
+
+.astro-code code {
+  font-size: inherit;
+}
