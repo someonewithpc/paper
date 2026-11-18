@@ -1,9 +1,11 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
+import solid from 'vite-plugin-solid';
 
 export default defineConfig({
   logLevel: 'warn',
-  plugins: [svelte()],
+  // Solid compiles its own JSX, so it only gets the Solid files; Vite turns React's into calls.
+  plugins: [svelte(), solid({ ssr: true, include: ['playground/adapters/solid/**', 'dist/solid/**'] })],
   define: {
     __VUE_OPTIONS_API__: 'false',
     __VUE_PROD_DEVTOOLS__: 'false',
@@ -13,6 +15,6 @@ export default defineConfig({
   // which would reload the page under a running spec.
   optimizeDeps: {
     noDiscovery: true,
-    include: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom/client', 'vue'],
+    include: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom/client', 'vue', 'solid-js', 'solid-js/web'],
   },
 });

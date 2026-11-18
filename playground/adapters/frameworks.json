@@ -13,5 +13,10 @@
     "title": "Svelte adapter",
     "server": "server.ts",
     "client": "client.ts"
+  },
+  "solid": {
+    "title": "Solid adapter",
+    "server": "server.tsx",
+    "client": "client.tsx"
   }
 }
