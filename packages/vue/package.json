@@ -1,0 +1,55 @@
+{
+  "name": "@someonewithpc/paper-vue",
+  "version": "0.1.0",
+  "description": "<PaperStack> and <PaperBook> for Vue 3: pages you turn by folding the corner, or across a book's spine",
+  "license": "GPL-3.0-or-later",
+  "author": "Hugo Sales <hugo@hsal.es>",
+  "homepage": "https://paper.js.hsal.es",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/someonewithpc/paper.git",
+    "directory": "packages/vue"
+  },
+  "bugs": {
+    "url": "https://github.com/someonewithpc/paper/issues"
+  },
+  "type": "module",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "paper",
+    "page-turn",
+    "page-flip",
+    "book",
+    "flipbook",
+    "dog-ear",
+    "carousel",
+    "vue",
+    "vue-component"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "check:package": "publint --strict && attw --pack . --profile esm-only",
+    "prepack": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@someonewithpc/paper": "^0.1.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

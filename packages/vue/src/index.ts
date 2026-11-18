@@ -5,9 +5,8 @@ import {
 
 import {
   createFor, liveOptions, markupKey, markupOf, OPTION_KEYS, optionsKey, splitProps, watchState, type AdapterOptions,
-} from '../adapters/shared.js';
-import type { MarkupElement } from '../markup.js';
-import type { PaperController, PaperMode, PaperModeEventMap, PaperStateMap } from '../types.js';
+} from '@someonewithpc/paper/adapter';
+import type { MarkupElement, PaperController, PaperMode, PaperModeEventMap, PaperStateMap } from '@someonewithpc/paper';
 
 type Callback = 'onTurnStart' | 'onTurnEnd' | 'onChange' | 'onSettle';
 
@@ -194,4 +193,4 @@ export function usePaper<M extends PaperMode = 'stack'>(): UsePaper<M> {
   };
 }
 
-export type * from '../types.js';
+export type * from '@someonewithpc/paper';

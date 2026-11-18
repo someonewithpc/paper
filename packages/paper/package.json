@@ -32,10 +32,6 @@
       "types": "./dist/adapters/shared.d.ts",
       "default": "./dist/adapters/shared.js"
     },
-    "./vue": {
-      "types": "./dist/vue/index.d.ts",
-      "default": "./dist/vue/index.js"
-    },
     "./svelte": {
       "types": "./dist/svelte/index.d.ts",
       "svelte": "./dist/svelte/index.js"
@@ -74,7 +70,6 @@
     "carousel",
     "custom-element",
     "astro-component",
-    "vue",
     "svelte",
     "solid",
     "astro"
@@ -92,13 +87,9 @@
   "peerDependencies": {
     "solid-js": "^1.8.0",
     "svelte": "^5.0.0",
-    "vue": "^3.3.0",
     "astro": ">=5.0.0"
   },
   "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    },
     "svelte": {
       "optional": true
     },

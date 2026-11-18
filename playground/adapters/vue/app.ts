@@ -1,6 +1,6 @@
 import { defineComponent, h, ref } from 'vue';
 
-import { PaperBook, PaperStack, usePaper } from '@someonewithpc/paper/vue';
+import { PaperBook, PaperStack, usePaper } from '@someonewithpc/paper-vue';
 
 import { bookPages, pageText, stackPages } from '../content.js';
 
