@@ -1,0 +1,188 @@
+---
+import { PaperBook } from '@hsal/paper/astro';
+
+const surfaces = ['var(--cloth)', undefined, undefined, undefined, undefined, undefined, undefined, 'var(--cloth)'];
+---
+
+<section class="section wrap" aria-labelledby="book-title">
+  <div class="section-head">
+    <h2 id="book-title">A book, two pages at a time</h2>
+    <p>
+      In book mode you drag a page corner across the spine and the leaf curls over, with its back showing as it
+      comes. This one is a <code>&lt;PaperBook&gt;</code> with <code>display="double"</code> and hard covers, so the
+      first and last leaves swing like boards. Focus it to turn with the arrow keys, or with <kbd>Home</kbd> and <kbd>End</kbd> for the covers.
+    </p>
+  </div>
+
+  <div class="book-desk">
+    <PaperBook id="fold-book" label="Five folds" class="fold-book" display="double" hardCovers startPage={1} surfaces={surfaces}>
+      <section class="leaf leaf-cover">
+        <h3>Five folds</h3>
+        <p>In the notation origami diagrams use</p>
+      </section>
+
+      <section class="leaf">
+        <svg viewBox="0 0 200 160" aria-hidden="true">
+          <rect class="paper" x="30" y="20" width="140" height="120" />
+          <path class="valley" d="M30 80 H170" />
+          <path class="arrow" d="M84 128 C 50 110, 50 50, 84 34" />
+          <path class="head" d="M74 33.2 L84 34 L78.3 42.2" />
+        </svg>
+        <h3>Valley fold</h3>
+        <p>Fold the paper toward you, so the crease sinks like a valley. Diagrams draw it as a dashed line.</p>
+        <p class="folio">1</p>
+      </section>
+
+      <section class="leaf">
+        <svg viewBox="0 0 200 160" aria-hidden="true">
+          <rect class="paper" x="30" y="20" width="140" height="120" />
+          <path class="mountain" d="M30 80 H170" />
+          <path class="arrow" d="M84 128 C 50 110, 50 50, 84 34" />
+          <path class="head hollow" d="M74 33.2 L84 34 L78.3 42.2 Z" />
+        </svg>
+        <h3>Mountain fold</h3>
+        <p>Fold it away from you, so the crease stands up like a ridge. The line is a dash and two dots.</p>
+        <p class="folio">2</p>
+      </section>
+
+      <section class="leaf">
+        <svg viewBox="0 0 200 160" aria-hidden="true">
+          <path class="paper" d="M20 130 L150 60 L180 30 L160 70 L40 140 Z" />
+          <path class="mountain" d="M138 68 L158 70" />
+          <path class="valley" d="M138 68 L150 60" />
+          <path class="arrow" d="M186 92 C 176 84, 168 76, 162 64" />
+          <path class="head hollow" d="M160 76 L162 64 L171 72 Z" />
+        </svg>
+        <h3>Inside reverse fold</h3>
+        <p>Push a corner in between its two layers and flatten it. A crane gets its head this way.</p>
+        <p class="folio">3</p>
+      </section>
+
+      <section class="leaf">
+        <svg viewBox="0 0 200 160" aria-hidden="true">
+          <rect class="paper" x="40" y="70" width="120" height="70" />
+          <path class="paper flap" d="M100 70 L100 18 L124 18 L124 70 Z" />
+          <path class="valley" d="M112 18 V70" />
+          <path class="arrow" d="M150 22 C 140 14, 132 14, 126 20" />
+          <path class="head hollow" d="M129 29 L126 20 L136 18 Z" />
+        </svg>
+        <h3>Squash fold</h3>
+        <p>Lift a flap, open it and press it flat into a new shape. A hollow arrowhead means push here.</p>
+        <p class="folio">4</p>
+      </section>
+
+      <section class="leaf">
+        <svg viewBox="0 0 200 160" aria-hidden="true">
+          <path class="paper" d="M30 20 H170 V112 L136 140 H30 Z" />
+          <path class="paper flap" d="M136 140 L170 112 L148 118 Z" />
+          <path class="valley" d="M136 140 L170 112" />
+        </svg>
+        <h3>Dog-ear</h3>
+        <p>Fold a corner of the page over the page. Every front page in a stack rests like this, 2&nbsp;cm along the bottom and 1&nbsp;cm up the side.</p>
+        <p class="folio">5</p>
+      </section>
+
+      <section class="leaf leaf-colophon">
+        <h3>Colophon</h3>
+        <p>This book is a <code>PaperBook</code> from <code>@hsal/paper/astro</code>, eight pages long. The diagrams are inline SVG and the type is Archivo and Literata.</p>
+        <p class="colophon-next">Turn this page for the back cover, or press <kbd>Home</kbd> for the front.</p>
+        <p class="folio">6</p>
+      </section>
+
+      <section class="leaf leaf-cover leaf-back">
+        <p>paper.hsal.es</p>
+      </section>
+    </PaperBook>
+  </div>
+</section>
+
+<style>
+  .book-desk {
+    width: min(100%, 62rem, 104svh);
+    margin-inline: auto;
+  }
+
+  .book-desk :global(.fold-book) {
+    aspect-ratio: 296 / 210;
+  }
+
+  .leaf {
+    display: flex;
+    flex-direction: column;
+    container-type: inline-size;
+    padding: 4.5cqi 5cqi 3.5cqi;
+    color: var(--ink);
+    font-size: clamp(0.625rem, 2.15cqi, 1.0625rem);
+    line-height: 1.45;
+  }
+
+  .leaf h3 {
+    margin-bottom: 0.4em;
+    font-size: clamp(0.875rem, 8.5cqi, 1.75rem);
+    font-stretch: 76%;
+  }
+
+  .leaf svg {
+    width: 100%;
+    margin-bottom: 6cqi;
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .leaf .paper {
+    fill: light-dark(#eef1ea, #2c3133);
+  }
+
+  .leaf .flap {
+    fill: light-dark(#dfe4da, #384043);
+  }
+
+  .leaf .valley {
+    stroke: var(--pencil);
+    stroke-dasharray: 7 5;
+  }
+
+  .leaf .mountain {
+    stroke: var(--pencil);
+    stroke-dasharray: 10 4 1 4 1 4;
+  }
+
+  .leaf .hollow {
+    fill: var(--paper);
+  }
+
+  .leaf .folio {
+    margin-top: auto;
+    font-family: var(--font-display);
+    font-size: 0.85em;
+    color: var(--ink-soft);
+  }
+
+  .leaf-colophon .colophon-next {
+    margin-top: 0.75em;
+  }
+
+  .leaf-cover {
+    justify-content: center;
+    gap: 0.5em;
+    padding-inline: 6cqi;
+    color: var(--cloth-ink);
+    text-align: center;
+    border: 1px solid rgb(0 0 0 / 0.2);
+    box-shadow: inset 0 0 0 0.75rem rgb(255 255 255 / 0.04), inset 0 0 0 calc(0.75rem + 1px) rgb(255 255 255 / 0.2);
+  }
+
+  .leaf-cover h3 {
+    font-size: clamp(1.5rem, 15cqi, 3.5rem);
+    font-stretch: 66%;
+    font-weight: 820;
+  }
+
+  .leaf-back {
+    justify-content: flex-end;
+    font-family: var(--font-display);
+  }
+</style>
