@@ -25,9 +25,9 @@ export function createPaper(root: HTMLElement, options?: PaperStackOptions): Pap
 export function createPaper(root: HTMLElement, options?: PaperOptions): PaperController;
 export function createPaper(root: HTMLElement, options: PaperOptions = {}): PaperController {
   if (typeof window === 'undefined') throw new Error('createPaper needs a DOM; render the markup with renderStack on the server');
-  const { options: fromData, errors } = parseDataOptions(root.dataset);
+  const { options: fromData, errors } = parseDataOptions(root.dataset, options.mode);
   for (const error of errors) console.warn(`[paper] ${error}, ignored`);
-  const merged = mergeOptions(fromData, options);
+  const merged = mergeOptions(fromData, options) as PaperOptions;
   const mode = modeOf(merged);
   const factory = modes[mode] as ModeFactory<typeof mode>;
   return factory(root, merged);

@@ -17,6 +17,31 @@ export interface PaperInteractions {
   tease: boolean;
 }
 
+/** The ways a reader can turn a book's pages. Every one is on by default. */
+export interface PaperBookInteractions {
+  /** Drag a page corner across the spine: the right page's to turn forward, the left page's to turn back. */
+  drag: boolean;
+  /** Arrow keys, Page Up, Page Down, Home and End on the focused book. */
+  keyboard: boolean;
+  /** A sideways wheel or trackpad scroll over the book. */
+  wheel: boolean;
+  /** A sideways finger or pen swipe over the book. */
+  swipe: boolean;
+  /** Lift a page corner as the pointer nears it. */
+  tease: boolean;
+}
+
+/** `auto` shows two pages while the book is at least `--paper-book-double-from` wide (default `40rem`), one below that. */
+export type PaperBookDisplay = 'single' | 'double' | 'auto';
+
+/** Where a book has got to. */
+export interface PaperBookView {
+  /** The spread in view, from 0. In double display spread 0 is the first page on its own. */
+  spread: number;
+  /** DOM indices of the pages in view, left to right. */
+  pages: readonly number[];
+}
+
 /** Optional drawings on the front page. Both are on by default. */
 export interface PaperDecorations {
   /** The paper clip over the top-left corner. The cast shadow of the dog-ear stays either way. */
@@ -27,14 +52,14 @@ export interface PaperDecorations {
 
 /** Text the stack gives assistive technology. */
 export interface PaperStrings {
-  /** `aria-roledescription` of the stack. Default `"paper stack"`. */
+  /** `aria-roledescription` of the root. Default `"paper stack"`, or `"book"` in book mode. */
   roleDescription: string;
-  /** Hidden text the stack is described by. Default `"The left and right arrow keys turn the pages"`. */
+  /** Hidden text the root is described by. The default names the keys the mode turns pages with. */
   keys: string;
 }
 
 export interface PaperAnnounceDetail {
-  /** DOM index of the page now at the front, from 0. */
+  /** DOM index of the page now at the front, or of the first page in view, from 0. */
   index: number;
   count: number;
   /** From the `pageTitle` option. */
@@ -94,9 +119,17 @@ declare global {
 
 export type PaperEventType = keyof PaperEventMap;
 
+/** A book's events: the shared ones, with the view added to `paper:change` and `paper:settle`. */
+export interface PaperBookEventMap extends PaperEventMap {
+  /** The pages in view changed. Fires as the turned leaf lands. `index` is the first page in view. */
+  'paper:change': CustomEvent<PaperChangeDetail & PaperBookView>;
+  'paper:settle': CustomEvent<PaperSettleDetail & PaperBookView>;
+}
+
 /** The events of each mode, keyed like {@link PaperModeOptions}. A mode's details extend the shared ones. */
 export interface PaperModeEventMap {
   stack: PaperEventMap;
+  book: PaperBookEventMap;
 }
 
 export type PaperEventListener<K extends PaperEventType, E extends PaperEventMap = PaperEventMap> = (event: E[K]) => void;
@@ -139,6 +172,20 @@ export interface PaperStackOptions extends PaperCommonOptions {
   resizeHold?: ResizeHoldSource | boolean;
 }
 
+/** A book of leaves turned across a spine, one page or two at a time. */
+export interface PaperBookOptions extends PaperCommonOptions<PaperBookEventMap, PaperAnnounceDetail & PaperBookView> {
+  mode: 'book';
+  /** One page in view, a spread of two, or whichever the book's width allows. Default `auto`. */
+  display?: PaperBookDisplay;
+  interactions?: Partial<PaperBookInteractions>;
+  /** The first and last leaves are stiff boards that swing about the spine instead of curling. Default `false`. */
+  hardCovers?: boolean;
+  /** In double display, a closed book (the cover alone, or the back alone) moves to the middle. Default `true`. */
+  autoCenter?: boolean;
+  /** Shade the curl, the shadow it casts and the spine. Default `true`. */
+  shading?: boolean;
+}
+
 /**
  * Options per mode. A new mode adds its options here with a required `mode` literal, which keeps
  * {@link PaperOptions} a discriminated union.
@@ -150,9 +197,8 @@ export interface PaperModeOptions {
 export type PaperMode = keyof PaperModeOptions;
 export type PaperOptions = PaperModeOptions[PaperMode];
 
-/** What every mode's state has. */
+/** What every mode's state has. Each mode's adds its `mode` tag. */
 export interface PaperStateBase {
-  readonly mode: PaperMode;
   /** DOM index of the page in front, or of the first page in view. */
   readonly index: number;
   readonly count: number;
@@ -171,8 +217,16 @@ export interface PaperStackState extends PaperStateBase {
 }
 
 /** The state of each mode, keyed like {@link PaperModeOptions}. */
+export interface PaperBookState extends PaperStateBase, PaperBookView {
+  readonly mode: 'book';
+  readonly spreads: number;
+  /** What `display` resolved to at the book's current width. */
+  readonly display: 'single' | 'double';
+}
+
 export interface PaperStateMap {
   stack: PaperStackState;
+  book: PaperBookState;
 }
 
 export type PaperState = PaperStateMap[PaperMode];

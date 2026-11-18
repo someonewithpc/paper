@@ -55,14 +55,14 @@ describe('parseDataOptions', () => {
 
   it('reports and leaves out invalid values', () => {
     const { options, errors } = parseDataOptions(dataset({
-      'data-paper-mode': 'book',
+      'data-paper-mode': 'scroll',
       'data-paper-start-page': '-1',
       'data-paper-wrap': 'yes',
       'data-paper-reduced-motion': 'none',
     }));
     expect(options).toEqual({});
     expect(errors).toHaveLength(4);
-    expect(errors[0]).toContain('data-paper-mode="book"');
+    expect(errors[0]).toContain('data-paper-mode="scroll"');
     expect(errors[1]).toContain('data-paper-start-page');
   });
 
