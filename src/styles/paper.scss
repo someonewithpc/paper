@@ -5,24 +5,10 @@
 @use 'sass:selector';
 @use 'sass:string';
 
+@use 'carousel';
+@use 'tokens' as *;
+
 $root: '[data-paper-stack]';
-
-$sheet: light-dark(#fbfaf7, #2b2a27);
-$ink: CanvasText;
-$ink-faint: GrayText;
-$line: light-dark(rgb(0 0 0 / 0.38), rgb(255 255 255 / 0.32));
-$accent: light-dark(#2f6fb2, #8cb8e8);
-
-$c-sheet: var(--paper-sheet, #{$sheet});
-$c-ink: var(--paper-ink, #{$ink});
-$c-ink-faint: var(--paper-ink-faint, #{$ink-faint});
-$c-line: var(--paper-line, #{$line});
-$c-accent: var(--paper-accent, #{$accent});
-$c-control: var(--paper-control-surface, #{$c-sheet});
-
-$splay: var(--paper-splay, 1.5deg);
-$radius: var(--paper-radius, 0.5em);
-$border-radius: calc(#{$radius} + 1px);
 
 $rest-x: var(--paper-fold-rest-x);
 $rest-y: var(--paper-fold-rest-y);
@@ -1361,119 +1347,7 @@ html:has(#{$root}:hover) {
     // sheet and half off. All of them lie on the stack, not beside it. Both or neither; without
     // them the row keeps its scrollbar and the pile.
     @supports selector(::scroll-marker) and selector(::scroll-button(right)) {
-      // Half of each arrow lies past the sheet's side edge, so the circle is never wider than
-      // twice the room beside the sheet.
-      --arrow-size: min(2rem, 100vw - anchor-size(width) + 2 * var(--row-slack));
-      // The arrow is drawn, not set in a font. A glyph sits where its font puts it, below the
-      // circle's middle in most monospace faces. It is a shaft --arrow-length long and a head
-      // --arrow-head tall, both --arrow-stroke thick, pointing to the previous sheet.
-      --arrow-length: 0.75rem;
-      --arrow-head: 0.625rem;
-      --arrow-stroke: 2px;
-      --dot-size: var(--paper-dot-size, 0.5rem);
-      --dot-hit: 1.5rem;
-      // The sheet's bottom margin, where the dots sit.
-      --dot-mat: var(--paper-dot-mat, 1rem);
-
-      // Tabs, not links: the dots are one Tab stop and the arrow keys move between them, where
-      // links made each dot a stop of its own.
-      scroll-marker-group: after tabs;
-      scrollbar-width: none;
-
-      &::scroll-marker-group {
-        position-anchor: --paper-stack;
-        position: absolute;
-        top: calc(anchor(bottom) - var(--dot-mat));
-        left: calc(anchor(left) + var(--row-slack));
-        right: calc(anchor(right) + var(--row-slack));
-        height: var(--dot-mat);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      > *::scroll-marker {
-        content: "" / "Page " counter(paper-sheet);
-        box-sizing: border-box;
-        flex: none;
-        width: var(--dot-hit);
-        height: var(--dot-hit);
-        border-radius: 50%;
-        background: radial-gradient(
-          circle,
-          var(--dot-fill, transparent) calc(var(--dot-size) / 2 - 1px),
-          #{$c-line} calc(var(--dot-size) / 2 - 1px) calc(var(--dot-size) / 2),
-          transparent calc(var(--dot-size) / 2 + 0.5px)
-        );
-        cursor: pointer;
-      }
-
-      > *::scroll-marker:hover {
-        --dot-fill: #{$c-line};
-      }
-
-      > *::scroll-marker:target-current {
-        --dot-fill: #{$c-accent};
-      }
-
-      &::scroll-button(*) {
-        position-anchor: --paper-stack;
-        position: absolute;
-        top: calc(anchor(center) - var(--arrow-size) / 2);
-        box-sizing: border-box;
-        width: var(--arrow-size);
-        height: var(--arrow-size);
-        padding: 0;
-        border: 2px solid #{$c-accent};
-        border-radius: 50%;
-        color: #{$c-ink};
-        // Each arm of the head is the diagonal of a square half the head's height, from the tip at
-        // the shaft's end to the head's top or bottom corner. Every piece is placed from the
-        // circle's centre.
-        --arm: calc(var(--arrow-head) / 2);
-        --arm-x: calc(50% - (var(--arrow-length) - var(--arm)) / 2);
-        --arm-line: transparent calc(50% - var(--arrow-stroke) / 2),
-          currentColor calc(50% - var(--arrow-stroke) / 2) calc(50% + var(--arrow-stroke) / 2),
-          transparent calc(50% + var(--arrow-stroke) / 2);
-        background:
-          linear-gradient(to top left, var(--arm-line))
-            var(--arm-x) calc(50% - var(--arm) / 2) / var(--arm) var(--arm) no-repeat,
-          linear-gradient(to bottom left, var(--arm-line))
-            var(--arm-x) calc(50% + var(--arm) / 2) / var(--arm) var(--arm) no-repeat,
-          linear-gradient(currentColor, currentColor)
-            center / var(--arrow-length) var(--arrow-stroke) no-repeat,
-          #{$c-control};
-        cursor: pointer;
-      }
-
-      &::scroll-button(*):enabled:hover {
-        background-color: color-mix(in oklch, #{$c-control}, #{$c-accent} 8%);
-      }
-
-      // Dimmed, the ring still has to read over both the sheet and the mat it straddles.
-      &::scroll-button(*):disabled {
-        color: #{$c-ink-faint};
-        border-color: #{$c-line};
-        cursor: default;
-      }
-
-      > *::scroll-marker:focus-visible,
-      &::scroll-button(*):focus-visible {
-        outline: 2px solid #{$c-ink};
-        outline-offset: 0.125rem;
-      }
-
-      &::scroll-button(left) {
-        content: "" / "Previous page";
-        left: calc(anchor(left) + var(--row-slack) - var(--arrow-size) / 2);
-      }
-
-      &::scroll-button(right) {
-        content: "" / "Next page";
-        right: calc(anchor(right) + var(--row-slack) - var(--arrow-size) / 2);
-        // The same arrow, turned to face the next sheet.
-        scale: -1 1;
-      }
+      @include carousel.controls(--paper-stack, paper-sheet);
     }
   }
 }

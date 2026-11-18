@@ -1,0 +1,18 @@
+// The colours and lengths the stack and the book share, each behind its public custom property.
+
+$sheet: light-dark(#fbfaf7, #2b2a27);
+$ink: CanvasText;
+$ink-faint: GrayText;
+$line: light-dark(rgb(0 0 0 / 0.38), rgb(255 255 255 / 0.32));
+$accent: light-dark(#2f6fb2, #8cb8e8);
+
+$c-sheet: var(--paper-sheet, #{$sheet});
+$c-ink: var(--paper-ink, #{$ink});
+$c-ink-faint: var(--paper-ink-faint, #{$ink-faint});
+$c-line: var(--paper-line, #{$line});
+$c-accent: var(--paper-accent, #{$accent});
+$c-control: var(--paper-control-surface, #{$c-sheet});
+
+$splay: var(--paper-splay, 1.5deg);
+$radius: var(--paper-radius, 0.5em);
+$border-radius: calc(#{$radius} + 1px);
