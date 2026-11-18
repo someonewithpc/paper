@@ -204,6 +204,12 @@ $chrome: '.paper-fold, .paper-back-grab, .paper-clip, .paper-clip-under, .paper-
   initial-value: 2cm;
 }
 
+// A page is opaque paper unless it paints itself: the pages share one grid cell, so a page with
+// no background would show every page under it. No specificity, so any rule of the page's wins.
+:where(#{$root} > div > :not(#{$chrome})) {
+  background: var(--paper-surface);
+}
+
 .paper-sr-only {
   position: absolute;
   width: 1px;
