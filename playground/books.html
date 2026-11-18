@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper, single and double books</title>
+  <link rel="stylesheet" href="/dist/styles.css">
+  <link rel="stylesheet" href="/playground/demo.css">
+  <script type="module" src="/dist/element.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Single and double books</h1>
+    <p>One page at a time, a spread of two with hard covers, and a <code>&lt;paper-book&gt;</code> whose display follows its width.</p>
+    <div id="single" class="demo-book demo-book--single" aria-label="Single book"></div>
+    <div id="double" class="demo-book" aria-label="Double book"></div>
+    <paper-book id="element" class="demo-book" aria-label="Element book" data-paper-book data-paper-start-page="2">
+      <section class="demo-leaf"><h2>Element · One</h2><p>The cover.</p></section>
+      <section class="demo-leaf"><h2>Element · Two</h2><p>Left of the first spread.</p></section>
+      <section class="demo-leaf" data-paper-surface="#1f4f8f"><h2>Element · Three</h2><p>A blueprint page.</p></section>
+      <section class="demo-leaf"><h2>Element · Four</h2><p>The back cover.</p></section>
+    </paper-book>
+  </main>
+  <script type="module">
+    import { createPaper } from '/dist/index.js';
+    import { bookPages } from '/playground/book-pages.mjs';
+
+    const fill = (root, prefix) => {
+      for (const page of bookPages(prefix)) {
+        const template = document.createElement('template');
+        template.innerHTML = page.html;
+        const element = template.content.firstElementChild;
+        if (page.surface) element.dataset.paperSurface = page.surface;
+        root.append(element);
+      }
+    };
+    window.papers = {};
+    for (const [id, options] of Object.entries({
+      single: { mode: 'book', display: 'single' },
+      double: { mode: 'book', display: 'double', hardCovers: true },
+    })) {
+      const root = document.getElementById(id);
+      fill(root, id === 'single' ? 'Single' : 'Double');
+      window.papers[id] = createPaper(root, options);
+    }
+  </script>
+</body>
+</html>

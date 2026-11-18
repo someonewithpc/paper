@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper book playground</title>
+  <link rel="stylesheet" href="/dist/styles.css">
+  <link rel="stylesheet" href="/playground/demo.css">
+</head>
+<body>
+  <main>
+    <h1>Book</h1>
+    <p><a href="/">Stack</a> · <a href="/book-ssr.html">Server-rendered book</a> · <a href="/playground/books.html">Single and double books</a> · <a href="/playground/book.html?display=single">Single</a> · <a href="/playground/book.html?display=double&amp;hard">Double, hard covers</a></p>
+    <div id="book" class="demo-book" aria-label="Plain book"></div>
+    <p id="log" aria-live="off"></p>
+  </main>
+  <script type="module">
+    import { createPaper } from '/dist/index.js';
+    import { bookPages } from '/playground/book-pages.mjs';
+
+    const params = new URLSearchParams(location.search);
+    const root = document.getElementById('book');
+    for (const page of bookPages('Plain', params.has('pages') ? Number(params.get('pages')) : undefined)) {
+      const template = document.createElement('template');
+      template.innerHTML = page.html;
+      const element = template.content.firstElementChild;
+      if (page.surface) element.dataset.paperSurface = page.surface;
+      root.append(element);
+    }
+    const options = { mode: 'book' };
+    if (params.has('display')) options.display = params.get('display');
+    if (params.has('start')) options.startPage = Number(params.get('start'));
+    if (params.has('motion')) options.reducedMotion = params.get('motion');
+    if (params.has('hard')) options.hardCovers = params.get('hard') !== 'false';
+    if (params.has('center')) options.autoCenter = params.get('center') !== 'false';
+    if (params.has('shading')) options.shading = params.get('shading') !== 'false';
+    if (params.has('width')) root.style.width = params.get('width');
+    const log = document.getElementById('log');
+    const events = (window.paperEvents = []);
+    const paper = createPaper(root, options);
+    for (const type of ['paper:turnstart', 'paper:turnend', 'paper:change', 'paper:settle']) {
+      paper.on(type, (event) => {
+        events.push({ type, detail: event.detail });
+        log.textContent = `${type} ${JSON.stringify(event.detail)}`;
+      });
+    }
+    window.paper = paper;
+  </script>
+</body>
+</html>
