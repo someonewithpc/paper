@@ -3,6 +3,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { flapGrip } from './fold.js';
 import { dogEarShown, settledAfter } from './paperStack.js';
 
+export const ASTRO_URL = `http://localhost:${Number(process.env['E2E_ASTRO_PORT'] ?? 4323)}`;
 export const ADAPTERS_URL = `http://localhost:${Number(process.env['E2E_ADAPTERS_PORT'] ?? 4322)}`;
 
 declare global {
@@ -17,7 +18,7 @@ declare global {
  * Counts the event listeners and observers the page holds: added and not yet removed, aborted
  * or fired once. Installed before any of the page's scripts run.
  */
-const countLive = () => {
+export const countLive = () => {
   const listeners = new Map<EventTarget, Map<string, string>>();
   const ids = new WeakMap<object, number>();
   let next = 0;
@@ -136,7 +137,7 @@ export async function dragBookForward(page: Page, book: Locator): Promise<void> 
   });
 }
 
-async function press(root: Locator, key: string): Promise<void> {
+export async function press(root: Locator, key: string): Promise<void> {
   await root.scrollIntoViewIfNeeded();
   await root.focus();
   await settledAfter(root, () => root.page().keyboard.press(key));

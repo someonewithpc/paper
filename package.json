@@ -40,6 +40,14 @@
       "node": "./dist/solid/server.js",
       "default": "./dist/solid/index.js"
     },
+    "./astro": {
+      "types": "./src/astro/index.ts",
+      "default": "./src/astro/index.ts"
+    },
+    "./astro/client": {
+      "types": "./dist/astro/client.d.ts",
+      "default": "./dist/astro/client.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
@@ -55,7 +63,8 @@
     "flipbook",
     "dog-ear",
     "carousel",
-    "custom-element"
+    "custom-element",
+    "astro-component"
   ],
   "scripts": {
     "build": "npm run build:js && npm run build:svelte && npm run build:solid && npm run build:css",
@@ -64,18 +73,20 @@
     "build:solid": "tsc -p tsconfig.solid.json && node scripts/build-solid.mjs",
     "build:css": "sass --no-source-map --style=expanded src/styles/paper.scss dist/styles.css",
     "clean": "rm -rf dist",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit && svelte-check --tsconfig ./tsconfig.svelte.json --threshold warning",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit && svelte-check --tsconfig ./tsconfig.svelte.json --threshold warning && npm run check:astro",
+    "check:astro": "node scripts/link-self.mjs playground/astro && astro check --root playground/astro",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints styles.css",
+    "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints styles.css astro",
     "playground": "node scripts/serve.mjs",
     "prepack": "npm run clean && npm run build"
   },
   "peerDependencies": {
     "react": "^18.2.0 || ^19.0.0",
+    "solid-js": "^1.8.0",
     "svelte": "^5.0.0",
     "vue": "^3.3.0",
-    "solid-js": "^1.8.0"
+    "astro": ">=5.0.0"
   },
   "peerDependenciesMeta": {
     "react": {
@@ -89,10 +100,14 @@
     },
     "solid-js": {
       "optional": true
+    },
+    "astro": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
+    "@astrojs/check": "^0.9.12",
     "@babel/core": "^7.29.13",
     "@playwright/test": "^1.65.1",
     "@sveltejs/package": "^3.0.3",
@@ -100,6 +115,7 @@
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "astro": "^7.4.12",
     "babel-preset-solid": "^1.9.19",
     "publint": "^0.3.25",
     "react": "^19.3.1",

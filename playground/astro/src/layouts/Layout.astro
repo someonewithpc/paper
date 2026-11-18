@@ -1,0 +1,46 @@
+---
+import { ClientRouter } from 'astro:transitions';
+
+import '../../../demo.css';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:,">
+    <title>{title}</title>
+    <ClientRouter />
+  </head>
+  <body>
+    <main>
+      <h1>{title}</h1>
+      <slot />
+      <p>
+        Stack page <output id="stack-state">none</output>,
+        book spread <output id="book-state">none</output>
+      </p>
+    </main>
+    <script>
+      import { enhanceAll, paperOf } from '@hsal/paper/astro/client';
+
+      // The states the specs read, from the controllers the components made.
+      const show = () => {
+        enhanceAll();
+        const stack = paperOf(document.getElementById('stack'));
+        const book = paperOf(document.getElementById('book'));
+        document.getElementById('stack-state')!.textContent = stack ? String(stack.state.index) : 'none';
+        document.getElementById('book-state')!.textContent = book?.state.mode === 'book' ? String(book.state.spread) : 'none';
+      };
+      for (const type of ['paper:settle', 'paper:change', 'astro:page-load'] as const) document.addEventListener(type, show);
+      show();
+    </script>
+  </body>
+</html>

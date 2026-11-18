@@ -1,0 +1,37 @@
+---
+import '../../dist/styles.css';
+import { markupOf, splitProps } from '../../dist/adapters/shared.js';
+import { elementsToString } from '../../dist/markup.js';
+import type { PaperMode } from '../../dist/types.js';
+import type { PaperComponentProps } from '../../dist/astro/types.js';
+
+interface Props extends Omit<PaperComponentProps, 'pageCount'> {
+  mode: PaperMode;
+  pages: string[];
+}
+
+const { mode, pages, as, label, id, class: className, style, surfaces, enhance = true, ...others } = Astro.props;
+const { options, rest } = splitProps(mode, others);
+const markup = pages.length ? markupOf(mode, { pageCount: pages.length, tag: as, label, id, surfaces }, options) : null;
+const { class: ownClass, style: ownStyle, ...own } = markup?.attributes ?? {};
+const Tag = (markup?.tag ?? 'div') as 'div';
+---
+
+{markup && (
+  <Tag
+    {...own}
+    {...rest}
+    id={id}
+    class={[ownClass, className].filter(Boolean).join(' ') || undefined}
+    style={[ownStyle, style].filter(Boolean).join("; ") || undefined}
+    data-paper-astro={enhance ? '' : undefined}
+  >{markup.pages.map((wrapper, index) => (
+    <div {...wrapper.attributes}><Fragment set:html={elementsToString(wrapper.beforeElements)} /><Fragment set:html={pages[index]} /><Fragment set:html={elementsToString(wrapper.afterElements)} /></div>
+  ))}</Tag><Fragment set:html={elementsToString(markup.afterElements)} />
+)}
+
+<script>
+  import { start } from '../../dist/astro/client.js';
+
+  start();
+</script>

@@ -1,0 +1,14 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<section class="demo-page" data-card><h2>{title}</h2><p>Drag the corner, swipe sideways, or use the arrow keys.</p></section>
+
+<script>
+  // Proves the slotted component's script reached the page.
+  for (const card of document.querySelectorAll<HTMLElement>('[data-card]')) card.dataset.scripted = '';
+</script>

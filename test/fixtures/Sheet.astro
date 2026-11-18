@@ -1,0 +1,9 @@
+---
+const { title } = Astro.props;
+---
+
+<section data-sheet><h2>{title}</h2></section>
+
+<script>
+  document.body.dataset.sheet = '';
+</script>

@@ -1,0 +1,21 @@
+---
+import { PaperBook, PaperStack } from '@hsal/paper/astro';
+
+import Card from '../components/Card.astro';
+import Layout from '../layouts/Layout.astro';
+
+const sheets = ['First sheet', 'Second sheet', 'Third sheet', 'Fourth sheet'];
+const leaves = ['Cover', 'Contents', 'Chapter one', 'Chapter two', 'Notes', 'Back cover'];
+---
+
+<Layout title="Astro adapter">
+  <p><a id="next" href="/second/">Second page</a></p>
+  <PaperStack id="stack" label="Astro stack" class="demo-stack" pageCount={sheets.length} surfaces={[undefined, '#1f4f8f']}>
+    {(index: number) => <Card title={sheets[index]!} />}
+  </PaperStack>
+  <PaperBook id="book" label="Astro book" class="demo-book" display="double">
+    {leaves.map((title) => (
+      <section class="demo-leaf"><h2>{title}</h2><p>Drag a corner across the spine.</p></section>
+    ))}
+  </PaperBook>
+</Layout>

@@ -18,5 +18,5 @@
     "types": []
   },
   "include": ["src", "test"],
-  "exclude": ["src/svelte"]
+  "exclude": ["src/svelte", "src/astro/index.ts"]
 }

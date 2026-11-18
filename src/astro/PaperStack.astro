@@ -1,0 +1,17 @@
+---
+import { slotPages } from '../../dist/astro/slots.js';
+import type { PaperStackProps } from '../../dist/astro/types.js';
+import Paper from './Paper.astro';
+
+type Props = PaperStackProps;
+
+const { pageCount, ...props } = Astro.props;
+// Each page stays the HTML the slot rendered, and its scripts and head content are written out
+// beside the root: see slots.ts.
+const rendered = pageCount === undefined
+  ? [await Astro.slots.render('default')]
+  : await Promise.all(Array.from({ length: pageCount }, (_, index) => Astro.slots.render('default', [index])));
+const { pages, before, after } = slotPages(rendered, pageCount === undefined);
+---
+
+{before}<Paper mode="stack" pages={pages} {...props} />{after}

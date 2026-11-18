@@ -1,0 +1,10 @@
+---
+import PaperStack from '../../src/astro/PaperStack.astro';
+import Sheet from './Sheet.astro';
+
+const titles = ['One', 'Two', 'Three'];
+---
+
+<PaperStack id="sheets" label="Sheets" class="mine" style="max-width: 30rem" startPage={1} wrap={false} data-test="x" pageCount={titles.length}>
+  {(index: number) => <Sheet title={titles[index]} />}
+</PaperStack>

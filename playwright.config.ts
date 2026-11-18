@@ -4,6 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const PORT = Number(process.env['E2E_PORT'] ?? 4321);
 const ADAPTERS_PORT = Number(process.env['E2E_ADAPTERS_PORT'] ?? 4322);
+const ASTRO_PORT = Number(process.env['E2E_ASTRO_PORT'] ?? 4323);
 
 // Playwright's downloaded Chromium doesn't run on NixOS, so the specs drive a system Chrome.
 function systemChrome(): string {
@@ -52,6 +53,14 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 120_000,
       env: { PORT: String(ADAPTERS_PORT) },
+    },
+    {
+      // Builds the Astro playground first, so it too waits for every server before the specs ask.
+      command: 'node scripts/serve-astro.mjs',
+      url: `http://localhost:${ASTRO_PORT}/`,
+      reuseExistingServer: false,
+      timeout: 180_000,
+      env: { PORT: String(ASTRO_PORT) },
     },
   ],
 });

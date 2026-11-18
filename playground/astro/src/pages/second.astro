@@ -1,0 +1,13 @@
+---
+import { PaperStack } from '@hsal/paper/astro';
+
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Second page">
+  <p><a id="back" href="/">Back</a></p>
+  <PaperStack id="stack" label="Second stack" class="demo-stack" wrap={false}>
+    <section class="demo-page"><h2>Only sheet</h2><p>One more.</p></section>
+    <section class="demo-page"><h2>Last sheet</h2><p>And the last.</p></section>
+  </PaperStack>
+</Layout>
