@@ -60,16 +60,25 @@ const keysOf = (root: HTMLElement): HTMLElement | null => {
   return null;
 };
 
-function createStack(root: HTMLElement, given: PaperStackOptions): PaperController<'stack'> {
-  if (!isEnhanced(root)) enhanceStack(root, given);
-  const options = resolveStackOptions(given);
-  const count = root.childElementCount;
-  if (!Number.isInteger(options.startPage) || options.startPage < 0 || options.startPage >= count) {
-    throw new RangeError(`startPage must be a page index from 0 to ${count - 1}, got ${options.startPage}`);
-  }
+// What both modes write on the root and beside it: the role description, the keys text, the live
+// region and the event listeners. `restore` takes back the attributes it added.
+interface RootWiring {
+  status: HTMLElement | null;
+  set(name: string, value: string): void;
+  on<K extends PaperEventType>(type: K, listener: (event: Event) => void): () => void;
+  off<K extends PaperEventType>(type: K, listener: (event: Event) => void): void;
+  restore(): void;
+}
 
-  const aborter = new AbortController();
-  const { signal } = aborter;
+interface RootSetup {
+  strings: { roleDescription: string, keys: string };
+  describedBy: string | undefined;
+  keyboard: boolean;
+  announce: boolean;
+  callbacks: readonly (readonly [PaperEventType, ((detail: never) => void) | undefined])[];
+}
+
+function wireRoot(root: HTMLElement, setup: RootSetup, signal: AbortSignal): RootWiring {
   const added: string[] = [];
   const set = (name: string, value: string) => {
     if (root.getAttribute(name) === value) return;
@@ -77,25 +86,20 @@ function createStack(root: HTMLElement, given: PaperStackOptions): PaperControll
     added.push(name);
   };
 
-  // What the stylesheet keys on, written once here, never during a turn.
-  if (!options.interactions.drag) set('data-paper-drag', 'false');
-  if (!options.interactions.backGrab) set('data-paper-back-grab', 'false');
-  if (options.reducedMotion === 'reduce') set('data-paper-reduced-motion', 'reduce');
-
-  set('aria-roledescription', options.strings.roleDescription);
-  // Only the scripted stack turns pages by keyboard; without script it is a scroll row.
-  if (options.interactions.keyboard) {
+  set('aria-roledescription', setup.strings.roleDescription);
+  // Only the scripted root turns pages by keyboard; without script it is a scroll row.
+  if (setup.keyboard) {
     if (root.tabIndex < 0) {
       root.tabIndex = 0;
       added.push('tabindex');
     }
     // Hidden text, not aria-description: that attribute is still a draft and many screen readers
     // skip it. A describedby reference reads hidden text all the same.
-    let describedBy = options.describedBy;
+    let describedBy = setup.describedBy;
     if (describedBy === undefined) {
       const keys = keysOf(root);
       if (keys) {
-        keys.textContent = options.strings.keys;
+        keys.textContent = setup.strings.keys;
         describedBy = keys.id;
       }
     }
@@ -103,7 +107,7 @@ function createStack(root: HTMLElement, given: PaperStackOptions): PaperControll
   }
 
   let status = statusOf(root);
-  if (!status && options.announce) {
+  if (!status && setup.announce) {
     status = document.createElement('div');
     status.className = 'paper-sr-only';
     status.setAttribute('role', 'status');
@@ -120,14 +124,73 @@ function createStack(root: HTMLElement, given: PaperStackOptions): PaperControll
     root.addEventListener(type, filtered, { signal });
     return filtered;
   };
-  for (const [type, callback] of [
-    ['paper:turnstart', options.onTurnStart],
-    ['paper:turnend', options.onTurnEnd],
-    ['paper:change', options.onChange],
-    ['paper:settle', options.onSettle],
-  ] as const) {
-    if (callback) listen(type, (event) => callback((event as CustomEvent).detail));
+  for (const [type, callback] of setup.callbacks) {
+    if (callback) listen(type, (event) => (callback as (detail: unknown) => void)((event as CustomEvent).detail));
   }
+
+  const off = (type: PaperEventType, listener: (event: Event) => void) => {
+    const key = listener as EventListener;
+    const filtered = own.get(type)?.get(key);
+    if (!filtered) return;
+    own.get(type)!.delete(key);
+    root.removeEventListener(type, filtered);
+  };
+
+  return {
+    status,
+    set,
+    on(type, listener) {
+      const key = listener as EventListener;
+      const byListener = own.get(type) ?? new Map<EventListener, EventListener>();
+      own.set(type, byListener);
+      if (!byListener.has(key)) byListener.set(key, listen(type, key));
+      return () => off(type, listener);
+    },
+    off,
+    restore() {
+      for (const name of added) root.removeAttribute(name);
+    },
+  };
+}
+
+// Calls `refresh` when an attribute on <html> named in `attributes` changes, or the colour scheme.
+const watchTheme = (attributes: readonly string[], refresh: () => void, signal: AbortSignal): void => {
+  if (attributes.length) {
+    const observer = new MutationObserver(refresh);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: [...attributes] });
+    signal.addEventListener('abort', () => observer.disconnect());
+  }
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', refresh, { signal });
+};
+
+function createStack(root: HTMLElement, given: PaperStackOptions): PaperController<'stack'> {
+  if (!isEnhanced(root)) enhanceStack(root, given);
+  const options = resolveStackOptions(given);
+  const count = root.childElementCount;
+  if (!Number.isInteger(options.startPage) || options.startPage < 0 || options.startPage >= count) {
+    throw new RangeError(`startPage must be a page index from 0 to ${count - 1}, got ${options.startPage}`);
+  }
+
+  const aborter = new AbortController();
+  const { signal } = aborter;
+  const wiring = wireRoot(root, {
+    strings: options.strings,
+    describedBy: options.describedBy,
+    keyboard: options.interactions.keyboard,
+    announce: Boolean(options.announce),
+    callbacks: [
+      ['paper:turnstart', options.onTurnStart],
+      ['paper:turnend', options.onTurnEnd],
+      ['paper:change', options.onChange],
+      ['paper:settle', options.onSettle],
+    ],
+  }, signal);
+  const { set, status } = wiring;
+
+  // What the stylesheet keys on, written once here, never during a turn.
+  if (!options.interactions.drag) set('data-paper-drag', 'false');
+  if (!options.interactions.backGrab) set('data-paper-back-grab', 'false');
+  if (options.reducedMotion === 'reduce') set('data-paper-reduced-motion', 'reduce');
 
   let driver: StackDriver | null = null;
   let destroyed = false;
@@ -142,13 +205,7 @@ function createStack(root: HTMLElement, given: PaperStackOptions): PaperControll
 
     // A theme can carry its own type, and the corner cut is written in em, so the stack's kept
     // lengths are retaken whenever the theme moves.
-    const refresh = () => refreshStack(root);
-    if (options.themeAttributes.length) {
-      const observer = new MutationObserver(refresh);
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: [...options.themeAttributes] });
-      signal.addEventListener('abort', () => observer.disconnect());
-    }
-    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', refresh, { signal });
+    watchTheme(options.themeAttributes, () => refreshStack(root), signal);
   });
 
   const turn = async (forward: boolean): Promise<boolean> => {
@@ -182,25 +239,13 @@ function createStack(root: HTMLElement, given: PaperStackOptions): PaperControll
       return turn(forward);
     },
     refresh: () => refreshStack(root),
-    on<K extends PaperEventType>(type: K, listener: PaperEventListener<K>) {
-      const key = listener as EventListener;
-      const byListener = own.get(type) ?? new Map<EventListener, EventListener>();
-      own.set(type, byListener);
-      if (!byListener.has(key)) byListener.set(key, listen(type, key));
-      return () => controller.off(type, listener);
-    },
-    off<K extends PaperEventType>(type: K, listener: PaperEventListener<K>) {
-      const key = listener as EventListener;
-      const filtered = own.get(type)?.get(key);
-      if (!filtered) return;
-      own.get(type)!.delete(key);
-      root.removeEventListener(type, filtered);
-    },
+    on: <K extends PaperEventType>(type: K, listener: PaperEventListener<K>) => wiring.on(type, listener as (event: Event) => void),
+    off: <K extends PaperEventType>(type: K, listener: PaperEventListener<K>) => wiring.off(type, listener as (event: Event) => void),
     destroy() {
       if (destroyed) return;
       destroyed = true;
       aborter.abort();
-      for (const name of added) root.removeAttribute(name);
+      wiring.restore();
     },
   };
   return controller;
