@@ -8,5 +8,10 @@
     "title": "Vue adapter",
     "server": "server.ts",
     "client": "client.ts"
+  },
+  "svelte": {
+    "title": "Svelte adapter",
+    "server": "server.ts",
+    "client": "client.ts"
   }
 }
