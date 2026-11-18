@@ -6,7 +6,7 @@ Without JavaScript the same markup is a scroll-snap carousel, with arrows and do
 
 It also does books. In [book mode](#book-mode) you drag a page corner across the spine and the leaf curls over, showing what is printed on its back as it comes. The book shows a spread of two pages when it is wide and one page when it is narrow, and without JavaScript it is a carousel of spreads.
 
-The library has no dependencies and no framework. It ships ESM, TypeScript types and one plain CSS file.
+The library has no dependencies and no framework. It ships ESM, TypeScript types and one plain CSS file. Components for React, Vue, Svelte, Solid and Astro come in the same package (see [Frameworks](#frameworks)).
 
 ## Install
 
@@ -271,6 +271,124 @@ Size the book as a whole, with an `aspect-ratio` or a height. In double display 
 
 The events are the stack's. `paper:change` fires as the turned leaf lands, and its detail, like `paper:settle`'s, also carries `spread` and `pages`. `index` and `turned` are both the first page in view. A change of display on resize fires nothing; read `state` after it.
 
+## Frameworks
+
+Each framework has its own entry point, with the framework as an optional peer dependency: `@hsal/paper/react`, `/vue`, `/svelte`, `/solid` and `/astro`. Each exports `<PaperStack>` and `<PaperBook>`, which take their mode's [options](#options) as props, so a book option on a stack is a type error. They render the markup on the server, hydrate it without a mismatch, call `createPaper` on mount and `destroy` on unmount.
+
+There are no live setters. A changed option destroys the controller and makes a new one. When the markup changes too, with the page count or `startPage` say, the component renders a new root, because the script has moved the dog-ear and the clip between page wrappers and written their classes and styles. A new event callback needs neither.
+
+Besides the options, the components take `as` (the root's tag), `label`, `id`, `surfaces` (each page's `--paper-surface`, by index) and other HTML attributes for the root. Load `@hsal/paper/styles.css` once, as in the quick start. The Astro components import it themselves.
+
+### React
+
+React 19. React 18 renders it on a server too, checked by hand. The module is marked `'use client'`. Each child element is a page. The ref is the controller, and `usePaper` gives you the controller and its state:
+
+```tsx
+import { PaperStack, usePaper } from '@hsal/paper/react';
+
+function Notes({ days }: { days: Day[] }) {
+  const paper = usePaper();
+  return (
+    <>
+      <PaperStack ref={paper.ref} label="Field notes" wrap={false} onChange={(detail) => console.log(detail.index)}>
+        {days.map((day) => <section key={day.id}><h2>{day.title}</h2></section>)}
+      </PaperStack>
+      <p>Page {(paper.state?.index ?? 0) + 1} of {days.length}</p>
+    </>
+  );
+}
+```
+
+### Vue
+
+Vue 3.3 and later. The components are render functions compiled to JavaScript, so your bundler needs no loader for them. Each element of the default slot is a page, `v-for` included. The callbacks are events: `turn-start`, `turn-end`, `change` and `settle`. A template ref exposes `controller` and `state`, and `usePaper` reads them for you:
+
+```vue
+<script setup lang="ts">
+import { PaperBook, usePaper } from '@hsal/paper/vue';
+
+defineProps<{ plates: Plate[] }>();
+const { ref: book, state } = usePaper<'book'>();
+</script>
+
+<template>
+  <PaperBook :ref="book" label="Atlas" display="double" @change="(detail) => console.log(detail.spread)">
+    <section v-for="plate in plates" :key="plate.id"><h2>{{ plate.title }}</h2></section>
+  </PaperBook>
+  <p>Spread {{ state?.spread }}</p>
+</template>
+```
+
+### Svelte
+
+Svelte 5. A snippet can't be split into elements, so the pages come from a `page` snippet, which the component renders once per index up to `pageCount`. `controller` and `state` are bindable, and the callbacks are props:
+
+```svelte
+<script lang="ts">
+  import { PaperStack, type PaperStackState } from '@hsal/paper/svelte';
+
+  let { days }: { days: Day[] } = $props();
+  let sheet: PaperStackState | null = $state(null);
+</script>
+
+<PaperStack label="Field notes" pageCount={days.length} bind:state={sheet} onChange={(detail) => console.log(detail.index)}>
+  {#snippet page(index)}
+    <section><h2>{days[index].title}</h2></section>
+  {/snippet}
+</PaperStack>
+```
+
+### Solid
+
+Solid 1.8 and later. Solid 2 came out in November 2026 and its compiler plugins don't take it yet. The package has the JSX source under the `solid` export condition, for vite-plugin-solid, and compiled DOM and server builds for the rest. Each child element is a page. `ref` is called with each controller made, and with `null` when it goes:
+
+```tsx
+import { For } from 'solid-js';
+import { PaperBook, usePaper } from '@hsal/paper/solid';
+
+function Atlas(props: { plates: Plate[] }) {
+  const book = usePaper<'book'>();
+  return (
+    <>
+      <PaperBook ref={book.ref} label="Atlas" hardCovers onSettle={(detail) => console.log(detail.spread)}>
+        <For each={props.plates}>{(plate) => <section><h2>{plate.title}</h2></section>}</For>
+      </PaperBook>
+      <p>Spread {book.state()?.spread}</p>
+    </>
+  );
+}
+```
+
+### Astro
+
+Astro 5 and later, tested with 7. The components ship as `.astro` source with typed props. They import the stylesheet and load a script that makes a controller for each root on load and after each view transition (`astro:page-load`), and destroys the controllers of roots a transition took off the page. Only options with a `data-paper-*` attribute are props, since functions can't travel to the browser. Listen for the `paper:*` events on the root instead.
+
+With `pageCount`, the default slot is called once per index:
+
+```astro
+---
+import { PaperStack } from '@hsal/paper/astro';
+import Sheet from '../components/Sheet.astro';
+
+const sheets = [{ title: 'Monday' }, { title: 'Tuesday', surface: '#1f4f8f' }];
+---
+
+<PaperStack label="Sheets" pageCount={sheets.length} surfaces={sheets.map((sheet) => sheet.surface)}>
+  {(index: number) => <Sheet title={sheets[index].title} />}
+</PaperStack>
+```
+
+Without it, each top-level element of the default slot is a page:
+
+```astro
+<PaperBook label="Atlas" display="double" hardCovers>
+  <section><h2>Cover</h2></section>
+  <section><h2>Contents</h2></section>
+</PaperBook>
+```
+
+A page is the HTML its slot rendered. The scripts and head content of the components in it go just before and after the root, so a slotted component keeps its `<script>`. To reach a controller, call `paperOf(root)` from `@hsal/paper/astro/client`. A script that may run before the components' own calls `enhanceAll()` first. `enhance={false}` leaves the root to your own `createPaper`.
+
 ## Browser notes
 
 The scripted stack needs `@property`, `light-dark()` and the CSS math functions, `sign()` and `log()` among them. Chrome and Edge 138, Firefox 128 and Safari 18 have all of them. The no-script carousel draws arrows and dots where `::scroll-button()` and `::scroll-marker` exist, and shows the next page's edge elsewhere.
@@ -282,12 +400,15 @@ The book works out how many pages fit with `sign()` over container units and ski
 The repository has a Nix flake with Node 22; `direnv allow` loads it.
 
 ```sh
-npm run build          # dist/ JavaScript, declarations and styles.css
+npm run build          # dist/ JavaScript, declarations, the adapters and styles.css
+npm run typecheck      # tsc, svelte-check and astro check
 npm test               # unit tests
-npm run test:e2e       # Playwright specs against the playground
+npm run test:e2e       # Playwright specs against the playgrounds
 npm run check:package  # publint and arethetypeswrong
 npm run playground     # http://localhost:4320/
 ```
+
+The e2e run also serves the adapter pages from Vite, rendered on the server and hydrated, at `http://localhost:4322/<framework>/`, and a built Astro site at `http://localhost:4323/`. `node scripts/serve-adapters.mjs` and `node scripts/serve-astro.mjs` start them on their own.
 
 ## License
 
