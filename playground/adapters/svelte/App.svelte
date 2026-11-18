@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PaperBook, PaperStack, type PaperBookState, type PaperStackState } from '@someonewithpc/paper/svelte';
+  import { PaperBook, PaperStack, type PaperBookState, type PaperStackState } from '@someonewithpc/paper-svelte';
 
   import { bookPages, pageText, stackPages } from '../content.js';
 

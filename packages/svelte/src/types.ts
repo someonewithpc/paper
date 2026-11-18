@@ -1,8 +1,8 @@
 import type { Snippet } from 'svelte';
 import type { HTMLAttributes } from 'svelte/elements';
 
-import type { AdapterOptions } from '../adapters/shared.js';
-import type { PaperController, PaperMode, PaperStateMap } from '../types.js';
+import type { PaperController, PaperMode, PaperStateMap } from '@someonewithpc/paper';
+import type { AdapterOptions } from '@someonewithpc/paper/adapter';
 
 /** What both components take besides the mode's options. Other HTML attributes go on the root. */
 export interface PaperComponentProps<M extends PaperMode> extends Omit<HTMLAttributes<HTMLElement>, 'children' | 'id' | 'class' | 'style'> {

@@ -12,4 +12,4 @@ export const PaperStack: Component<PaperStackProps, {}, 'controller' | 'state'> 
 export const PaperBook: Component<PaperBookProps, {}, 'controller' | 'state'> = Book;
 
 export type { PaperBookProps, PaperComponentProps, PaperStackProps } from './types.js';
-export type * from '../types.js';
+export type * from '@someonewithpc/paper';

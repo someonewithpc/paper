@@ -8,5 +8,5 @@
     "sourceMap": true
   },
   "include": ["src"],
-  "exclude": ["src/**/*.test.ts", "src/svelte", "src/solid", "src/astro/index.ts"]
+  "exclude": ["src/**/*.test.ts", "src/solid", "src/astro/index.ts"]
 }

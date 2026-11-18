@@ -1,9 +1,9 @@
 // Type-level tests: `npm run typecheck` checks them, and vitest runs them as no-ops.
 import type { Snippet } from 'svelte';
 import { describe, expectTypeOf, it } from 'vitest';
+import type { PaperBookState, PaperController } from '@someonewithpc/paper';
 
-import type { PaperBookProps, PaperStackProps } from '../packages/paper/src/svelte/types.js';
-import type { PaperBookState, PaperController } from '../packages/paper/src/types.js';
+import type { PaperBookProps, PaperStackProps } from '../packages/svelte/src/types.js';
 
 declare const page: Snippet<[number]>;
 const never = (_: () => void) => {};

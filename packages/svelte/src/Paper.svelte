@@ -3,9 +3,8 @@
 
   import {
     createFor, liveOptions, markupKey, markupOf, optionsKey, splitProps, watchState,
-  } from '../adapters/shared.js';
-  import { elementsToString } from '../markup.js';
-  import type { PaperMode } from '../types.js';
+  } from '@someonewithpc/paper/adapter';
+  import { elementsToString, type PaperMode } from '@someonewithpc/paper';
   import type { PaperComponentProps } from './types.js';
 
   let {

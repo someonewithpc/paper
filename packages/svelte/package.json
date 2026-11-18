@@ -1,0 +1,54 @@
+{
+  "name": "@someonewithpc/paper-svelte",
+  "version": "0.1.0",
+  "description": "<PaperStack> and <PaperBook> for Svelte 5: pages you turn by folding the corner, or across a book's spine",
+  "license": "GPL-3.0-or-later",
+  "author": "Hugo Sales <hugo@hsal.es>",
+  "homepage": "https://paper.js.hsal.es",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/someonewithpc/paper.git",
+    "directory": "packages/svelte"
+  },
+  "bugs": {
+    "url": "https://github.com/someonewithpc/paper/issues"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "paper",
+    "page-turn",
+    "page-flip",
+    "book",
+    "flipbook",
+    "dog-ear",
+    "carousel",
+    "svelte",
+    "svelte-component"
+  ],
+  "scripts": {
+    "build": "svelte-package -i src -o dist --tsconfig tsconfig.json",
+    "clean": "rm -rf dist",
+    "check:package": "publint --strict && attw --pack . --profile esm-only",
+    "prepack": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@someonewithpc/paper": "^0.1.0"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
