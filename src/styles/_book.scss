@@ -1,0 +1,300 @@
+// The book's rules. The script places pages by writing data-paper-place on their wrappers and
+// moves the turning ones by inline transform and clip-path on the wrapper or the page itself,
+// never by anything a page's content inherits.
+
+@use 'sass:selector';
+
+@use 'carousel';
+@use 'tokens' as *;
+
+$book: '[data-paper-book]';
+$page: '.paper-book-page';
+$shade: '.paper-book-shade';
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+
+  @at-root #{selector.replace(&, $book, '#{$book}[data-paper-reduced-motion="reduce"]')} {
+    @content;
+  }
+}
+
+// Pages side by side, worked out on each page from the book's width, a container unit, so the
+// script, the stylesheet and the no-script row all read the same number. Not inherited: nothing
+// inside a page reads it.
+@property --paper-book-across {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 1;
+}
+
+// Where a turn's shading falls, written on the shade elements alone.
+@property --paper-shade-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@each $name in shade-at, shade-reach {
+  @property --paper-#{$name} {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+}
+
+paper-book {
+  display: block;
+}
+
+// The script listens to the wheel passively, so a sideways swipe's first scroll would also take
+// the browser back a page.
+html:has(#{$book}:hover) {
+  overscroll-behavior-x: none;
+}
+
+#{$book} {
+  container: paper-book / inline-size;
+  anchor-name: --paper-book;
+  anchor-scope: --paper-book;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  touch-action: pan-y;
+  --paper-default-surface: #{$c-sheet};
+
+  &:focus-visible {
+    outline: 2px solid #{$c-ink};
+    outline-offset: 0.25rem;
+  }
+
+  &[data-paper-corner] {
+    cursor: grab;
+  }
+
+  &[data-paper-dragging] {
+    cursor: grabbing;
+  }
+}
+
+#{$book} > #{$page} {
+  --paper-book-across: calc(1.5 + 0.5 * sign(100cqi - var(--paper-book-double-from, 40rem)));
+  --paper-surface: var(--paper-default-surface);
+  grid-row: 1;
+  grid-column: 1;
+  display: grid;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  // A page out of view is skipped outright: neither its style nor its layout is kept up to date.
+  content-visibility: hidden;
+  z-index: 0;
+  transition: translate 400ms ease-in-out;
+
+  // Right-hand pages: the first and every other one after it.
+  &:nth-child(odd) {
+    grid-column: calc(var(--paper-book-across));
+  }
+
+  &[data-paper-place] {
+    content-visibility: visible;
+  }
+
+  &[data-paper-place='view'],
+  &[data-paper-place='under'] {
+    z-index: 1;
+  }
+
+  &[data-paper-place='pair'] {
+    opacity: calc(var(--paper-book-across) - 1);
+  }
+
+  &[data-paper-place='front'] {
+    z-index: 2;
+  }
+
+  &[data-paper-place='back'] {
+    z-index: 3;
+  }
+
+  @include reduced-motion {
+    transition: none;
+  }
+}
+
+// Where the book opens is where it starts, not somewhere it slides to.
+#{$book}:not([data-paper-ready]) > #{$page} {
+  transition: none;
+}
+
+#{$book}[data-paper-display='single'] > #{$page} {
+  --paper-book-across: 1;
+}
+
+#{$book}[data-paper-display='double'] > #{$page} {
+  --paper-book-across: 2;
+}
+
+// A closed book moves to the middle: half a page left for the cover alone on the right, half a
+// page right for the back alone on the left.
+#{$book}[data-paper-center='start'] > #{$page} {
+  translate: -50% 0;
+}
+
+#{$book}[data-paper-center='end'] > #{$page} {
+  translate: 50% 0;
+}
+
+// A page is opaque paper unless it paints itself. No specificity, so any rule of the page's wins.
+:where(#{$book} > #{$page} > :not(#{$shade})) {
+  background: var(--paper-surface);
+}
+
+#{$book} > #{$page} > :not(#{$shade}) {
+  grid-area: 1 / 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+#{$shade} {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+  z-index: 1;
+  --shadow: rgb(0 0 0 / 0.32);
+  --gleam: rgb(255 255 255 / 0.18);
+
+  &[data-paper-shade] {
+    display: block;
+  }
+
+  // On the page a fold uncovers, the shadow the curling paper casts, darkest at the crease.
+  &[data-paper-shade='cast'] {
+    background: linear-gradient(
+      var(--paper-shade-angle),
+      rgb(0 0 0 / 0.22) var(--paper-shade-at),
+      transparent calc(var(--paper-shade-at) + var(--paper-shade-reach))
+    );
+  }
+
+  // On the folded-over paper, dark where it bends at the crease, then a gleam where it faces the
+  // light, then flat.
+  &[data-paper-shade='curl'],
+  &[data-paper-shade='flap'] {
+    background: linear-gradient(
+      var(--paper-shade-angle),
+      var(--shadow) var(--paper-shade-at),
+      var(--gleam) calc(var(--paper-shade-at) + 0.35 * var(--paper-shade-reach)),
+      transparent calc(var(--paper-shade-at) + var(--paper-shade-reach))
+    );
+  }
+
+  // In single display the leaf has nothing printed on its back: the flap is the page's paper.
+  &[data-paper-shade='flap'] {
+    background-color: var(--paper-surface);
+    border-radius: inherit;
+  }
+
+  // A stiff board darkens as it stands up from the spine, by opacity alone.
+  &[data-paper-shade='board'] {
+    background: rgb(0 0 0 / 0.45);
+  }
+}
+
+#{$book}[data-paper-shading='false'] #{$shade}:not([data-paper-shade='flap']) {
+  display: none;
+}
+
+#{$book}[data-paper-shading='false'] #{$shade}[data-paper-shade='flap'] {
+  background-image: none;
+}
+
+// The gutter: both pages of a spread darken towards the spine. On a wrapper's ::after so it rides
+// with the page through a turn.
+#{$book}:not([data-paper-shading='false']) > #{$page}::after {
+  --paper-book-across: inherit;
+  content: '';
+  grid-area: 1 / 1;
+  pointer-events: none;
+  z-index: 1;
+  opacity: calc(var(--paper-book-across) - 1);
+  background: linear-gradient(to right, rgb(0 0 0 / 0.14), transparent 8%);
+}
+
+#{$book}:not([data-paper-shading='false']) > #{$page}:nth-child(even)::after {
+  background: linear-gradient(to left, rgb(0 0 0 / 0.14), transparent 8%);
+}
+
+// Without script the book is a scroll-snap row of spreads. The spreads come from numbers alone:
+// each page takes its share of the row, a right-hand page snaps where its left-hand partner does
+// (its snap area reaches back half a row), and the first and last pages make room for the partner
+// they lack. A page's dot is hidden while it is the right half of a spread.
+@media (scripting: none) {
+  #{$book} {
+    display: flex !important;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scroll-behavior: smooth;
+    touch-action: auto;
+    counter-reset: paper-page;
+    // The arrows and dots stand off the row by this; the stack's row needs it, the book's doesn't.
+    --row-slack: 0px;
+
+    > #{$page} {
+      flex: 0 0 calc(100% / var(--paper-book-across));
+      content-visibility: visible !important;
+      opacity: 1 !important;
+      translate: none !important;
+      transform: none !important;
+      clip-path: none !important;
+      z-index: auto !important;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      counter-increment: paper-page;
+
+      > * {
+        clip-path: none !important;
+      }
+
+      > #{$shade} {
+        display: none !important;
+      }
+    }
+
+    > #{$page}:nth-child(odd) {
+      scroll-margin-inline-start: calc((var(--paper-book-across) - 1) * 50cqi);
+    }
+
+    > #{$page}:first-child {
+      margin-inline-start: calc((var(--paper-book-across) - 1) * 50cqi);
+    }
+
+    > #{$page}:last-child:nth-child(even) {
+      margin-inline-end: calc((var(--paper-book-across) - 1) * 50cqi);
+    }
+
+    @include reduced-motion {
+      scroll-behavior: auto;
+    }
+
+    @supports selector(::scroll-marker) and selector(::scroll-button(right)) {
+      @include carousel.controls(--paper-book, paper-page);
+
+      // A pseudo-element queries the page it belongs to.
+      @container style(--paper-book-across: 2) {
+        > #{$page}:nth-child(odd):not(:first-child)::scroll-marker {
+          content: none;
+        }
+      }
+    }
+  }
+}

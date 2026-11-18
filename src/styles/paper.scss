@@ -1,10 +1,12 @@
-// The paper stack's stylesheet. Compiled to dist/styles.css; nothing here needs Sass at use.
+// The paper stack's and book's stylesheet. Compiled to dist/styles.css; nothing here needs Sass
+// at use. The book's rules are in _book.scss.
 // The README lists the public custom properties and their defaults.
 
 @use 'sass:math';
 @use 'sass:selector';
 @use 'sass:string';
 
+@use 'book';
 @use 'carousel';
 @use 'tokens' as *;
 
