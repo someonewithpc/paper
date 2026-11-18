@@ -1,5 +1,6 @@
 // What the framework adapters share: which props are options, when a change of them needs a new
-// controller, and the markup each mode renders.
+// controller, and the markup each mode renders. Exported as @someonewithpc/paper/adapter for the
+// adapter packages, which are released at the same version as this one.
 
 import { bookMarkup, stackMarkup, type StackMarkup } from '../markup.js';
 import { createPaper } from '../paper.js';

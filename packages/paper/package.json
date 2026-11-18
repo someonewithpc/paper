@@ -28,6 +28,10 @@
       "types": "./dist/element.d.ts",
       "default": "./dist/element.js"
     },
+    "./adapter": {
+      "types": "./dist/adapters/shared.d.ts",
+      "default": "./dist/adapters/shared.js"
+    },
     "./react": {
       "types": "./dist/react/index.d.ts",
       "default": "./dist/react/index.js"
