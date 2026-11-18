@@ -1,0 +1,61 @@
+{
+  "name": "@someonewithpc/paper-react",
+  "version": "0.1.0",
+  "description": "<PaperStack> and <PaperBook> for React: pages you turn by folding the corner, or across a book's spine",
+  "license": "GPL-3.0-or-later",
+  "author": "Hugo Sales <hugo@hsal.es>",
+  "homepage": "https://paper.js.hsal.es",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/someonewithpc/paper.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/someonewithpc/paper/issues"
+  },
+  "type": "module",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "paper",
+    "page-turn",
+    "page-flip",
+    "book",
+    "flipbook",
+    "dog-ear",
+    "carousel",
+    "react",
+    "react-component"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "check:package": "publint --strict && attw --pack . --profile esm-only",
+    "prepack": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@someonewithpc/paper": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@types/react": "^18.2.0 || ^19.0.0",
+    "react": "^18.2.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

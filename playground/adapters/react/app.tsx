@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { PaperBook, PaperStack, usePaper } from '@someonewithpc/paper/react';
+import { PaperBook, PaperStack, usePaper } from '@someonewithpc/paper-react';
 
 import { bookPages, pageText, stackPages } from '../content.js';
 

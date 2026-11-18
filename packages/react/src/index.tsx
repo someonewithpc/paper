@@ -7,9 +7,8 @@ import {
 
 import {
   createFor, liveOptions, markupKey, markupOf, optionsKey, parseStyle, splitProps, watchState, type AdapterOptions,
-} from '../adapters/shared.js';
-import type { Attributes, MarkupElement } from '../markup.js';
-import type { PaperController, PaperMode, PaperStateMap } from '../types.js';
+} from '@someonewithpc/paper/adapter';
+import type { Attributes, MarkupElement, PaperController, PaperMode, PaperStateMap } from '@someonewithpc/paper';
 
 /** What both components take besides the mode's options. Other HTML attributes go on the root. */
 export interface PaperComponentProps extends Omit<HTMLAttributes<HTMLElement>, 'children' | 'onChange'> {
@@ -139,4 +138,4 @@ export function usePaper<M extends PaperMode = 'stack'>(): UsePaper<M> {
   return { ref, controller, state };
 }
 
-export type * from '../types.js';
+export type * from '@someonewithpc/paper';

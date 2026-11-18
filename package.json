@@ -5,18 +5,19 @@
   "type": "module",
   "workspaces": [
     "packages/paper",
+    "packages/react",
     "site"
   ],
   "scripts": {
-    "build": "npm run build -w @someonewithpc/paper",
-    "clean": "npm run clean -w @someonewithpc/paper",
+    "build": "npm run build -w @someonewithpc/paper && npm run build -w @someonewithpc/paper-react",
+    "clean": "npm run clean -w @someonewithpc/paper -w @someonewithpc/paper-react",
     "pretypecheck": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit && svelte-check --tsconfig ./packages/paper/tsconfig.svelte.json --threshold warning && npm run check:astro",
     "check:astro": "node scripts/link-self.mjs playground/astro && astro check --root playground/astro",
     "pretest": "npm run build",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "check:package": "npm run check:package -w @someonewithpc/paper",
+    "check:package": "npm run check:package -w @someonewithpc/paper -w @someonewithpc/paper-react",
     "playground": "node scripts/serve.mjs",
     "site:dev": "npm run build && npm run dev -w site",
     "site:build": "npm run build && npm run build -w site",
