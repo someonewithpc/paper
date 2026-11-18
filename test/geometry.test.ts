@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   coastTip, commitPoint, easingOf, foldSizeFromTip, foldTipFromSize, pagePentagon, pointFolded,
   polygonCentroid, restSeed, splitByCrease, splitPolygon, THROW_COAST_MS,
-} from '../src/stack/geometry.js';
+} from '../packages/paper/src/stack/geometry.js';
 
 const area = (pts: { x: number, y: number }[]) => {
   let sum = 0;

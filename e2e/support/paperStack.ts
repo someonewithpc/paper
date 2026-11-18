@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import type { PaperController, PaperEventType } from '../../src/types.js';
+import type { PaperController, PaperEventType } from '../../packages/paper/src/types.js';
 
 /** The sheet inside a page wrapper: the flap and the rest of the chrome ride on top of it. */
 export const SHEET = ':scope > :not(.paper-fold, .paper-back-grab, .paper-clip, .paper-clip-under, .paper-flip-hint)';

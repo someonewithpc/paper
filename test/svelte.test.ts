@@ -2,7 +2,7 @@ import { createRawSnippet } from 'svelte';
 import { render } from 'svelte/server';
 import { describe, expect, it } from 'vitest';
 
-import { PaperBook, PaperStack } from '../src/svelte/index.js';
+import { PaperBook, PaperStack } from '../packages/paper/src/svelte/index.js';
 
 const pages = (...titles: string[]) =>
   createRawSnippet((index: () => number) => ({ render: () => `<section><h2>${titles[index()]}</h2></section>` }));

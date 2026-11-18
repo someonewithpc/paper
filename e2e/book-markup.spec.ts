@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import type { PaperBookElement } from '../src/element.js';
+import type { PaperBookElement } from '../packages/paper/src/element.js';
 
 test.use({ viewport: { width: 1200, height: 1600 } });
 

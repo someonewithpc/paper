@@ -2,8 +2,8 @@
 import { useRef } from 'react';
 import { describe, expectTypeOf, it } from 'vitest';
 
-import { PaperBook, PaperStack, usePaper } from '../src/react/index.js';
-import type { PaperBookState, PaperController, PaperStackState } from '../src/types.js';
+import { PaperBook, PaperStack, usePaper } from '../packages/paper/src/react/index.js';
+import type { PaperBookState, PaperController, PaperStackState } from '../packages/paper/src/types.js';
 
 const never = (_: () => void) => {};
 

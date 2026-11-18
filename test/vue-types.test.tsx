@@ -2,8 +2,8 @@
 // Type-level tests: `npm run typecheck` checks them, and vitest runs them as no-ops.
 import { describe, expectTypeOf, it } from 'vitest';
 
-import { PaperBook, PaperStack, usePaper } from '../src/vue/index.js';
-import type { PaperBookState, PaperStackState } from '../src/types.js';
+import { PaperBook, PaperStack, usePaper } from '../packages/paper/src/vue/index.js';
+import type { PaperBookState, PaperStackState } from '../packages/paper/src/types.js';
 
 const never = (_: () => void) => {};
 

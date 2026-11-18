@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyAffine, backPageTransform, constrainTip, crease, gradientAt, hardAngle, isHardLeaf, pagesOfSpread, spreadCount,
   spreadOfPage, toBackPage, turnCommits, turnPath, turnRoles,
-} from '../src/book/geometry.js';
+} from '../packages/paper/src/book/geometry.js';
 
 const area = (pts: { x: number, y: number }[]) => {
   let sum = 0;

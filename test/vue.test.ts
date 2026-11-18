@@ -2,7 +2,7 @@ import { createSSRApp, h } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { describe, expect, it } from 'vitest';
 
-import { PaperBook, PaperStack } from '../src/vue/index.js';
+import { PaperBook, PaperStack } from '../packages/paper/src/vue/index.js';
 
 const page = (title: string) => h('section', [h('h2', title)]);
 const render = (component: unknown) => renderToString(createSSRApp({ render: () => component }));

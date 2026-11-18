@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import type { PaperBookState } from '../../src/types.js';
+import type { PaperBookState } from '../../packages/paper/src/types.js';
 import { settledAfter } from './paperStack.js';
 
 /** The playground's one book, built from plain children by createPaper. */

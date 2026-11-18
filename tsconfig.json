@@ -17,6 +17,6 @@
     "jsx": "react-jsx",
     "types": []
   },
-  "include": ["src", "test"],
-  "exclude": ["src/svelte", "src/astro/index.ts"]
+  "include": ["packages/*/src", "test"],
+  "exclude": ["packages/paper/src/svelte", "packages/paper/src/astro/index.ts"]
 }

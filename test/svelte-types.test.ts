@@ -2,8 +2,8 @@
 import type { Snippet } from 'svelte';
 import { describe, expectTypeOf, it } from 'vitest';
 
-import type { PaperBookProps, PaperStackProps } from '../src/svelte/types.js';
-import type { PaperBookState, PaperController } from '../src/types.js';
+import type { PaperBookProps, PaperStackProps } from '../packages/paper/src/svelte/types.js';
+import type { PaperBookState, PaperController } from '../packages/paper/src/types.js';
 
 declare const page: Snippet<[number]>;
 const never = (_: () => void) => {};

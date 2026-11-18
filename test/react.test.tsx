@@ -1,7 +1,7 @@
 import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { PaperBook, PaperStack } from '../src/react/index.js';
+import { PaperBook, PaperStack } from '../packages/paper/src/react/index.js';
 
 const Page = ({ title }: { title: string }) => <section><h2>{title}</h2></section>;
 

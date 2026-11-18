@@ -2,7 +2,7 @@
 import { renderToString } from 'solid-js/web';
 import { describe, expect, it } from 'vitest';
 
-import { PaperBook, PaperStack } from '../src/solid/index.js';
+import { PaperBook, PaperStack } from '../packages/paper/src/solid/index.js';
 
 const Page = (props: { title: string }) => <section><h2>{props.title}</h2></section>;
 // Without the hydration keys and markers Solid hydrates by.

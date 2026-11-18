@@ -21,7 +21,7 @@ const types = {
 };
 
 const ssr = async (url) => {
-  const { renderStack } = await import(`../dist/index.js?${Date.now()}`);
+  const { renderStack } = await import(`../packages/paper/dist/index.js?${Date.now()}`);
   const template = await readFile(join(root, 'playground/ssr.html'), 'utf8');
   const startPage = Number(url.searchParams.get('start') ?? 0);
   const stack = renderStack({
@@ -35,7 +35,7 @@ const ssr = async (url) => {
 };
 
 const bookSsr = async (url) => {
-  const { renderBook } = await import(`../dist/index.js?${Date.now()}`);
+  const { renderBook } = await import(`../packages/paper/dist/index.js?${Date.now()}`);
   const template = await readFile(join(root, 'playground/book-ssr.html'), 'utf8');
   const options = { startPage: Number(url.searchParams.get('start') ?? 0) };
   const display = url.searchParams.get('display');
@@ -58,7 +58,8 @@ createServer(async (request, response) => {
       response.end(await (url.pathname === '/ssr.html' ? ssr : bookSsr)(url));
       return;
     }
-    const path = url.pathname === '/' ? '/playground/index.html' : url.pathname;
+    const path = url.pathname === '/' ? '/playground/index.html'
+      : url.pathname.startsWith('/dist/') ? `/packages/paper${url.pathname}` : url.pathname;
     const file = normalize(join(root, path));
     if (!file.startsWith(root)) throw new Error('outside the root');
     const body = await readFile(file);

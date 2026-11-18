@@ -6,3 +6,4 @@ playwright-report/
 .svelte-kit/
 .astro/
 .wrangler/
+packages/paper/README.md

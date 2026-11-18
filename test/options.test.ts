@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_BOOK_INTERACTIONS, DEFAULT_BOOK_STRINGS, DEFAULT_INTERACTIONS, dataAttributesOf, defaultAnnounce,
   defaultBookAnnounce, mergeOptions, parseDataOptions, resolveBookOptions, resolveStackOptions,
-} from '../src/options.js';
+} from '../packages/paper/src/options.js';
 
 const dataset = (attributes: Record<string, string>) =>
   Object.fromEntries(Object.entries(attributes).map(([name, value]) => [

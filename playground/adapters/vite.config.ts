@@ -5,7 +5,7 @@ import solid from 'vite-plugin-solid';
 export default defineConfig({
   logLevel: 'warn',
   // Solid compiles its own JSX, so it only gets the Solid files; Vite turns React's into calls.
-  plugins: [svelte(), solid({ ssr: true, include: ['playground/adapters/solid/**', 'dist/solid/**'] })],
+  plugins: [svelte(), solid({ ssr: true, include: ['playground/adapters/solid/**', 'packages/paper/dist/solid/**'] })],
   define: {
     __VUE_OPTIONS_API__: 'false',
     __VUE_PROD_DEVTOOLS__: 'false',

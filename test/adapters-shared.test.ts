@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { liveOptions, markupKey, markupOf, optionsKey, parseStyle, splitProps } from '../src/adapters/shared.js';
+import { liveOptions, markupKey, markupOf, optionsKey, parseStyle, splitProps } from '../packages/paper/src/adapters/shared.js';
 
 describe('splitProps', () => {
   it('keeps the mode\'s options apart from the rest and drops undefined ones', () => {

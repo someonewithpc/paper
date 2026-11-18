@@ -1,14 +1,14 @@
 // Type-level tests: `npm run typecheck` checks them, and vitest runs them as no-ops.
 import { describe, expectTypeOf, it } from 'vitest';
 
-import { createPaper } from '../src/paper.js';
-import { bookMarkup, stackMarkup } from '../src/markup.js';
+import { createPaper } from '../packages/paper/src/paper.js';
+import { bookMarkup, stackMarkup } from '../packages/paper/src/markup.js';
 import type {
   PaperBookElement, PaperStackElement,
-} from '../src/element.js';
+} from '../packages/paper/src/element.js';
 import type {
   PaperBookOptions, PaperBookState, PaperChangeDetail, PaperController, PaperOptions, PaperStackState, PaperState,
-} from '../src/types.js';
+} from '../packages/paper/src/types.js';
 
 declare const root: HTMLElement;
 // Never called: the bodies only have to type-check.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { bookMarkup, elementsToString, pageIndexOf, renderBook, renderStack, spreadPartnerOf, stackMarkup } from '../src/markup.js';
+import { bookMarkup, elementsToString, pageIndexOf, renderBook, renderStack, spreadPartnerOf, stackMarkup } from '../packages/paper/src/markup.js';
 
 const pages = ['<section>One</section>', '<section>Two</section>', { html: '<section>Three</section>', surface: 'navy' }];
 
