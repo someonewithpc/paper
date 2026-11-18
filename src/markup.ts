@@ -32,6 +32,14 @@ export interface StackMarkupInput {
   attributes?: Attributes;
 }
 
+/** An element of the markup, for renderers that build elements instead of writing HTML. */
+export interface MarkupElement {
+  tag: string;
+  attributes: Attributes;
+  /** Its contents, as HTML. */
+  html: string;
+}
+
 export interface PageMarkup {
   /** Attributes of the page's wrapper `<div>`. */
   attributes: Attributes;
@@ -39,6 +47,10 @@ export interface PageMarkup {
   before: string;
   /** HTML to put inside the wrapper after the page. */
   after: string;
+  /** `before` as elements. */
+  beforeElements: readonly MarkupElement[];
+  /** `after` as elements. */
+  afterElements: readonly MarkupElement[];
 }
 
 /** The stack in parts, for renderers that have to place the pages themselves. */
@@ -48,6 +60,8 @@ export interface StackMarkup {
   pages: PageMarkup[];
   /** HTML that goes right after the stack element, as its sibling: the live region and the keys text. */
   after: string;
+  /** `after` as elements. */
+  afterElements: readonly MarkupElement[];
 }
 
 export const escapeAttribute = (value: string): string =>
@@ -63,6 +77,9 @@ export const attributesToString = (attributes: Attributes): string =>
 
 const TAG = /^[a-z][a-z0-9-]*$/;
 
+export const elementsToString = (elements: readonly MarkupElement[]): string =>
+  elements.map(({ tag, attributes, html }) => `<${tag}${attributesToString(attributes)}>${html}</${tag}>`).join('');
+
 // One gem-clip wire, split at the top bend into its two layers. The wire leans with the resting
 // fold-back crease, its outer edge running along that crease and bottoming out at the pin, so the
 // whole body sits inside the corner region a flip folds behind the stack: the wrappers' crease
@@ -72,25 +89,44 @@ const TAG = /^[a-z][a-z0-9-]*$/;
 // the page.
 const clipGradient = (id: string) => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="28" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f2f4f7"/><stop offset="40%" stop-color="#aeb4bd"/><stop offset="60%" stop-color="#7c828d"/><stop offset="100%" stop-color="#d8dbe0"/></linearGradient></defs>`;
 
-const clipSvg = (path: string, gradient: string) =>
-  `<svg aria-hidden="true" focusable="false" viewBox="0 0 28 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${path}" stroke="url(#${gradient})" stroke-width="3" stroke-linecap="round"/>${clipGradient(gradient)}</svg>`;
+const svgAttributes = (viewBox: string): Attributes => ({
+  'aria-hidden': 'true', focusable: 'false', viewBox, fill: 'none', xmlns: 'http://www.w3.org/2000/svg',
+});
 
-const HINT_SVG = '<svg class="paper-flip-hint" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8 H18 M13 3 L18 8 L13 13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 16 H6 M11 11 L6 16 L11 21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const clipSvg = (path: string, gradient: string) =>
+  elementsToString([{
+    tag: 'svg',
+    attributes: svgAttributes('0 0 28 64'),
+    html: `<path d="${path}" stroke="url(#${gradient})" stroke-width="3" stroke-linecap="round"/>${clipGradient(gradient)}`,
+  }]);
+
+const HINT: MarkupElement = {
+  tag: 'svg',
+  attributes: { class: 'paper-flip-hint', ...svgAttributes('0 0 24 24') },
+  html: '<path d="M4 8 H18 M13 3 L18 8 L13 13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 16 H6 M11 11 L6 16 L11 21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>',
+};
 
 /** The chrome a front page carries, split around its content. */
-export const frontChrome = (id: string, decorations: { clip: boolean, hint: boolean }): { before: string, after: string } => {
+export const frontChrome = (id: string, decorations: { clip: boolean, hint: boolean }): {
+  before: string, after: string, beforeElements: MarkupElement[], afterElements: MarkupElement[],
+} => {
   // The flap, clip, back-grab handle and hint are siblings of the page content, not children:
   // the page's crease clip-path clips descendants, and these have to overhang the page (the flap
   // when a large fold wraps past an edge, the clip because its bend wraps over the top edge).
   // The flap comes after the clip so folded-over paper covers the wire when dragged across it,
   // and the hint rides above everything. The clip's wrapper stays without its wire, since the
   // dog-ear's cast shadow is painted on it.
-  const before = decorations.clip
-    ? `<div class="paper-clip-under">${clipSvg('M5 22 V50 a9 9 0 0 0 18 0 V14 a6.25 6.25 0 0 0 -12.5 0', `paper-clip-under-${id}`)}</div>`
-    : '';
+  const beforeElements: MarkupElement[] = decorations.clip
+    ? [{ tag: 'div', attributes: { class: 'paper-clip-under' }, html: clipSvg('M5 22 V50 a9 9 0 0 0 18 0 V14 a6.25 6.25 0 0 0 -12.5 0', `paper-clip-under-${id}`) }]
+    : [];
   const wire = decorations.clip ? clipSvg('M10.5 14 V44 a4 4 0 0 0 8 0 V22', `paper-clip-over-${id}`) : '';
-  const after = `<div class="paper-clip">${wire}</div><div class="paper-fold"></div><div class="paper-back-grab"></div>${decorations.hint ? HINT_SVG : ''}`;
-  return { before, after };
+  const afterElements: MarkupElement[] = [
+    { tag: 'div', attributes: { class: 'paper-clip' }, html: wire },
+    { tag: 'div', attributes: { class: 'paper-fold' }, html: '' },
+    { tag: 'div', attributes: { class: 'paper-back-grab' }, html: '' },
+    ...(decorations.hint ? [HINT] : []),
+  ];
+  return { before: elementsToString(beforeElements), after: elementsToString(afterElements), beforeElements, afterElements };
 };
 
 /** The page order that puts `start` at the front: a page's `--paper-page-index`, from 1. */
@@ -128,19 +164,22 @@ export function stackMarkup(input: StackMarkupInput): StackMarkup {
       attributes: front ? { class: 'paper-front', style } : { style },
       before: front ? chrome.before : '',
       after: front ? chrome.after : '',
+      beforeElements: front ? chrome.beforeElements : [],
+      afterElements: front ? chrome.afterElements : [],
     };
   });
 
-  return { tag, attributes, pages, after: rootSiblings(id, resolved) };
+  const siblings = rootSiblings(id, resolved);
+  return { tag, attributes, pages, after: elementsToString(siblings), afterElements: siblings };
 }
 
 // The live region is a sibling, not a child: every child of the root is a page.
 const rootSiblings = (
   id: string, { describedBy, interactions, strings }: { describedBy: string | undefined, interactions: { keyboard: boolean }, strings: { keys: string } },
-): string => {
-  let after = '<div class="paper-sr-only" role="status" data-paper-status></div>';
+): MarkupElement[] => {
+  const after: MarkupElement[] = [{ tag: 'div', attributes: { class: 'paper-sr-only', role: 'status', 'data-paper-status': '' }, html: '' }];
   if (describedBy === undefined && interactions.keyboard) {
-    after += `<span hidden id="paper-keys-${escapeAttribute(id)}" data-paper-keys>${escapeText(strings.keys)}</span>`;
+    after.push({ tag: 'span', attributes: { hidden: '', id: `paper-keys-${id}`, 'data-paper-keys': '' }, html: escapeText(strings.keys) });
   }
   return after;
 };
@@ -179,7 +218,8 @@ export const spreadPartnerOf = (page: number, count: number): number | undefined
   return partner < count ? partner : undefined;
 };
 
-const BOOK_SHADE = '<div class="paper-book-shade" aria-hidden="true"></div>';
+const BOOK_SHADE: MarkupElement = { tag: 'div', attributes: { class: 'paper-book-shade', 'aria-hidden': 'true' }, html: '' };
+const BOOK_SHADE_HTML = elementsToString([BOOK_SHADE]);
 
 export function bookMarkup(input: BookMarkupInput): BookMarkup {
   const { pageCount: count, surfaces = [], options = {} } = input;
@@ -206,10 +246,11 @@ export function bookMarkup(input: BookMarkupInput): BookMarkup {
     if (page === start) pageAttributes['data-paper-place'] = 'view';
     else if (page === partner) pageAttributes['data-paper-place'] = 'pair';
     if (surface) pageAttributes['style'] = `--paper-surface: ${surface}`;
-    return { attributes: pageAttributes, before: '', after: BOOK_SHADE };
+    return { attributes: pageAttributes, before: '', after: BOOK_SHADE_HTML, beforeElements: [], afterElements: [BOOK_SHADE] };
   });
 
-  return { tag, attributes, pages, after: rootSiblings(id, resolved) };
+  const siblings = rootSiblings(id, resolved);
+  return { tag, attributes, pages, after: elementsToString(siblings), afterElements: siblings };
 }
 
 const renderPages = (markup: StackMarkup, pages: readonly PaperPageInput[]): string => {

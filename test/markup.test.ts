@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { bookMarkup, pageIndexOf, renderBook, renderStack, spreadPartnerOf, stackMarkup } from '../src/markup.js';
+import { bookMarkup, elementsToString, pageIndexOf, renderBook, renderStack, spreadPartnerOf, stackMarkup } from '../src/markup.js';
 
 const pages = ['<section>One</section>', '<section>Two</section>', { html: '<section>Three</section>', surface: 'navy' }];
 
@@ -67,6 +67,20 @@ describe('stackMarkup', () => {
     expect(() => stackMarkup({ pageCount: 0 })).toThrow(RangeError);
     expect(() => stackMarkup({ pageCount: 2, tag: 'div onclick' })).toThrow(RangeError);
     expect(() => stackMarkup({ pageCount: 2, options: { startPage: 2 } })).toThrow(RangeError);
+  });
+
+  it('gives the chrome and the siblings as elements that write the same HTML', () => {
+    for (const markup of [
+      stackMarkup({ pageCount: 3, label: 'A <stack>', options: { startPage: 1 } }),
+      stackMarkup({ pageCount: 2, options: { decorations: { clip: false, hint: false } } }),
+      bookMarkup({ pageCount: 3, options: { strings: { keys: 'Keys & more' } } }),
+    ]) {
+      expect(elementsToString(markup.afterElements)).toBe(markup.after);
+      for (const page of markup.pages) {
+        expect(elementsToString(page.beforeElements)).toBe(page.before);
+        expect(elementsToString(page.afterElements)).toBe(page.after);
+      }
+    }
   });
 });
 

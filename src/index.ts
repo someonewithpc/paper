@@ -1,9 +1,9 @@
 export { createPaper } from './paper.js';
 export { enhanceBook, enhanceStack, isBookEnhanced, isEnhanced } from './enhance.js';
 export {
-  attributesToString, bookMarkup, escapeAttribute, escapeText, frontChrome, pageIndexOf, renderBook, renderStack,
+  attributesToString, bookMarkup, elementsToString, escapeAttribute, escapeText, frontChrome, pageIndexOf, renderBook, renderStack,
   spreadPartnerOf, stackMarkup,
-  type Attributes, type BookMarkup, type BookMarkupInput, type PageMarkup, type PaperBookMarkupOptions,
+  type Attributes, type BookMarkup, type BookMarkupInput, type MarkupElement, type PageMarkup, type PaperBookMarkupOptions,
   type PaperPageInput, type StackMarkup, type StackMarkupInput,
 } from './markup.js';
 export {
