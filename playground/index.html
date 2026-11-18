@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper playground</title>
+  <link rel="stylesheet" href="/dist/styles.css">
+  <link rel="stylesheet" href="/playground/demo.css">
+</head>
+<body>
+  <main>
+    <h1>Paper playground</h1>
+    <p><a href="/ssr.html">Server-rendered</a> · <a href="/playground/element.html">Custom element</a></p>
+    <div id="plain" class="demo-stack" aria-label="Plain stack"></div>
+    <p id="log" aria-live="off"></p>
+  </main>
+  <script type="module">
+    import { createPaper } from '/dist/index.js';
+    import { pages } from '/playground/pages.mjs';
+
+    const root = document.getElementById('plain');
+    for (const page of pages('Plain')) {
+      const template = document.createElement('template');
+      template.innerHTML = page.html;
+      const element = template.content.firstElementChild;
+      if (page.surface) element.dataset.paperSurface = page.surface;
+      root.append(element);
+    }
+    const params = new URLSearchParams(location.search);
+    const options = {};
+    if (params.has('start')) options.startPage = Number(params.get('start'));
+    if (params.has('wrap')) options.wrap = params.get('wrap') !== 'false';
+    if (params.has('motion')) options.reducedMotion = params.get('motion');
+    const log = document.getElementById('log');
+    const events = (window.paperEvents = []);
+    const paper = createPaper(root, options);
+    for (const type of ['paper:turnstart', 'paper:turnend', 'paper:change', 'paper:settle']) {
+      paper.on(type, (event) => {
+        events.push({ type, detail: event.detail });
+        log.textContent = `${type} ${JSON.stringify(event.detail)}`;
+      });
+    }
+    window.paper = paper;
+  </script>
+</body>
+</html>

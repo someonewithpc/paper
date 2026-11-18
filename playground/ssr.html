@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper, server-rendered</title>
+  <link rel="stylesheet" href="/dist/styles.css">
+  <link rel="stylesheet" href="/playground/demo.css">
+</head>
+<body>
+  <main>
+    <h1>Server-rendered stack</h1>
+    <!-- stack -->
+  </main>
+  <script type="module">
+    import { createPaper } from '/dist/index.js';
+    const events = (window.paperEvents = []);
+    window.paper = createPaper(document.querySelector('[data-paper-stack]'));
+    for (const type of ['paper:turnstart', 'paper:turnend', 'paper:change', 'paper:settle']) {
+      window.paper.on(type, (event) => events.push({ type, detail: event.detail }));
+    }
+  </script>
+</body>
+</html>

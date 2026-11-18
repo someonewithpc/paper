@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper, custom element</title>
+  <link rel="stylesheet" href="/dist/styles.css">
+  <link rel="stylesheet" href="/playground/demo.css">
+  <script type="module" src="/dist/element.js"></script>
+</head>
+<body>
+  <main>
+    <h1>&lt;paper-stack&gt;</h1>
+    <paper-stack class="demo-stack" aria-label="Element stack" data-paper-stack data-paper-wrap="false" data-paper-start-page="1">
+      <section class="demo-page"><h2>One</h2><p>The first page.</p></section>
+      <section class="demo-page" data-paper-surface="#1f4f8f"><h2>Two</h2><p>A blueprint page.</p></section>
+      <section class="demo-page"><h2>Three</h2><p>The last page. Wrap is off, so it stays.</p></section>
+    </paper-stack>
+  </main>
+</body>
+</html>

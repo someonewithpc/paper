@@ -1,0 +1,42 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1rem 40vh;
+  background: light-dark(#d9d6cf, #1b1a18);
+}
+
+main {
+  max-width: 56rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 4rem;
+}
+
+.demo-stack {
+  width: 100%;
+  aspect-ratio: 2 / 1;
+}
+
+.demo-page {
+  box-sizing: border-box;
+  padding: 1.5rem 2rem;
+  border-radius: 0.5em;
+  border: 1px solid light-dark(#a9a59c, #55524c);
+  overflow: hidden;
+}
+
+.demo-page h2 {
+  margin-top: 0;
+}
+
+[style*="#1f4f8f"] > .demo-page {
+  color: #e8eef8;
+}
+
+.tall {
+  height: 120vh;
+}
