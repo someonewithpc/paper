@@ -8,5 +8,5 @@
     "directory": "./dist",
     "not_found_handling": "404-page"
   },
-  "routes": [{ "pattern": "paper.hsal.es", "custom_domain": true }]
+  "routes": [{ "pattern": "paper.js.hsal.es", "custom_domain": true }]
 }

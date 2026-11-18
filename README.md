@@ -8,7 +8,7 @@ It also does books. In [book mode](#book-mode) you drag a page corner across the
 
 The library has no dependencies and no framework. It ships ESM, TypeScript types and one plain CSS file. Components for React, Vue, Svelte, Solid and Astro come in the same package (see [Frameworks](#frameworks)).
 
-[paper.hsal.es](https://paper.hsal.es) runs it: a stack and a book to turn, and the options, events and custom properties to try live.
+[paper.js.hsal.es](https://paper.js.hsal.es) runs it: a stack and a book to turn, and the options, events and custom properties to try live.
 
 ## Install
 
@@ -410,7 +410,7 @@ npm run check:package  # publint and arethetypeswrong
 npm run playground     # http://localhost:4320/
 npm run site:dev       # the landing page in site/, from Astro's dev server
 npm run site:build     # the library, then the landing page into site/dist/
-npm run site:deploy    # site:build, then wrangler deploy to paper.hsal.es
+npm run site:deploy    # site:build, then wrangler deploy to paper.js.hsal.es
 npm run test:e2e -w site  # the landing page's smoke and axe specs
 ```
 
