@@ -408,6 +408,10 @@ npm test               # unit tests
 npm run test:e2e       # Playwright specs against the playgrounds
 npm run check:package  # publint and arethetypeswrong
 npm run playground     # http://localhost:4320/
+npm run site:dev       # the landing page in site/, from Astro's dev server
+npm run site:build     # the library, then the landing page into site/dist/
+npm run site:deploy    # site:build, then wrangler deploy to paper.hsal.es
+npm run test:e2e -w site  # the landing page's smoke and axe specs
 ```
 
 The e2e run also serves the adapter pages from Vite, rendered on the server and hydrated, at `http://localhost:4322/<framework>/`, and a built Astro site at `http://localhost:4323/`. `node scripts/serve-adapters.mjs` and `node scripts/serve-astro.mjs` start them on their own.
