@@ -1,9 +1,9 @@
 /** @jsxImportSource solid-js */
 // Type-level tests: `npm run typecheck` checks them, and vitest runs them as no-ops.
 import { describe, expectTypeOf, it } from 'vitest';
+import type { PaperBookState, PaperController, PaperStackState } from '@someonewithpc/paper';
 
-import { PaperBook, PaperStack, usePaper } from '../packages/paper/src/solid/index.js';
-import type { PaperBookState, PaperController, PaperStackState } from '../packages/paper/src/types.js';
+import { PaperBook, PaperStack, usePaper } from '../packages/solid/src/index.js';
 
 const never = (_: () => void) => {};
 

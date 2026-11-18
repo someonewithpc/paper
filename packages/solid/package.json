@@ -1,0 +1,61 @@
+{
+  "name": "@someonewithpc/paper-solid",
+  "version": "0.1.0",
+  "description": "<PaperStack> and <PaperBook> for Solid: pages you turn by folding the corner, or across a book's spine",
+  "license": "GPL-3.0-or-later",
+  "author": "Hugo Sales <hugo@hsal.es>",
+  "homepage": "https://paper.js.hsal.es",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/someonewithpc/paper.git",
+    "directory": "packages/solid"
+  },
+  "bugs": {
+    "url": "https://github.com/someonewithpc/paper/issues"
+  },
+  "type": "module",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "solid": "./dist/index.jsx",
+      "worker": "./dist/server.js",
+      "deno": "./dist/server.js",
+      "browser": "./dist/index.js",
+      "node": "./dist/server.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "paper",
+    "page-turn",
+    "page-flip",
+    "book",
+    "flipbook",
+    "dog-ear",
+    "carousel",
+    "solid",
+    "solidjs",
+    "solid-component"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/build.mjs",
+    "clean": "rm -rf dist",
+    "check:package": "publint --strict && attw --pack . --profile esm-only",
+    "prepack": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@someonewithpc/paper": "^0.1.0"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.8.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

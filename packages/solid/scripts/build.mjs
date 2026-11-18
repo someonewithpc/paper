@@ -1,4 +1,4 @@
-// Compiles the Solid adapter the way Solid packages ship: tsc has written dist/solid/index.jsx
+// Compiles the Solid adapter the way Solid packages ship: tsc has written dist/index.jsx
 // with the JSX kept, for the `solid` export condition, and Babel turns it into a DOM build and a
 // server build, both hydratable.
 import { readFile, writeFile } from 'node:fs/promises';
@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { transformAsync } from '@babel/core';
 import solid from 'babel-preset-solid';
 
-const dir = fileURLToPath(new URL('../dist/solid/', import.meta.url));
+const dir = fileURLToPath(new URL('../dist/', import.meta.url));
 const source = await readFile(`${dir}index.jsx`, 'utf8');
 
 for (const [file, generate] of [['index.js', 'dom'], ['server.js', 'ssr']]) {

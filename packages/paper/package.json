@@ -32,15 +32,6 @@
       "types": "./dist/adapters/shared.d.ts",
       "default": "./dist/adapters/shared.js"
     },
-    "./solid": {
-      "types": "./dist/solid/index.d.ts",
-      "solid": "./dist/solid/index.jsx",
-      "worker": "./dist/solid/server.js",
-      "deno": "./dist/solid/server.js",
-      "browser": "./dist/solid/index.js",
-      "node": "./dist/solid/server.js",
-      "default": "./dist/solid/index.js"
-    },
     "./astro": {
       "types": "./src/astro/index.ts",
       "default": "./src/astro/index.ts"
@@ -66,26 +57,20 @@
     "carousel",
     "custom-element",
     "astro-component",
-    "solid",
     "astro"
   ],
   "scripts": {
-    "build": "npm run build:js && npm run build:solid && npm run build:css",
+    "build": "npm run build:js && npm run build:css",
     "build:js": "tsc -p tsconfig.build.json",
-    "build:solid": "tsc -p tsconfig.solid.json && node scripts/build-solid.mjs",
     "build:css": "sass --no-source-map --style=expanded src/styles/paper.scss dist/styles.css",
     "clean": "rm -rf dist",
     "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints styles.css astro",
     "prepack": "npm run clean && npm run build && cp ../../README.md README.md"
   },
   "peerDependencies": {
-    "solid-js": "^1.8.0",
     "astro": ">=5.0.0"
   },
   "peerDependenciesMeta": {
-    "solid-js": {
-      "optional": true
-    },
     "astro": {
       "optional": true
     }
