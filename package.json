@@ -1,0 +1,60 @@
+{
+  "name": "@hsal/paper",
+  "version": "0.1.0",
+  "description": "A stack of paper pages you turn by folding the corner, with a CSS carousel when scripting is off",
+  "license": "GPL-3.0-or-later",
+  "author": "Hugo Sales <hugo@hsal.es>",
+  "type": "module",
+  "files": [
+    "dist",
+    "src",
+    "!src/**/*.test.ts"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "default": "./dist/element.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "./dist/element.js",
+    "*.css"
+  ],
+  "keywords": [
+    "paper",
+    "page-turn",
+    "page-flip",
+    "dog-ear",
+    "carousel",
+    "custom-element"
+  ],
+  "scripts": {
+    "build": "npm run build:js && npm run build:css",
+    "build:js": "tsc -p tsconfig.build.json",
+    "build:css": "sass --no-source-map --style=expanded src/styles/paper.scss dist/styles.css",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints styles.css",
+    "playground": "node scripts/serve.mjs",
+    "prepack": "npm run clean && npm run build"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@playwright/test": "^1.65.1",
+    "publint": "^0.3.25",
+    "sass": "^1.108.2",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
