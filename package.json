@@ -18,6 +18,9 @@
     "src",
     "!src/**/*.test.ts"
   ],
+  "workspaces": [
+    "site"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -92,7 +95,10 @@
     "test:e2e": "playwright test",
     "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints styles.css astro",
     "playground": "node scripts/serve.mjs",
-    "prepack": "npm run clean && npm run build"
+    "prepack": "npm run clean && npm run build",
+    "site:dev": "npm run build && npm run dev -w site",
+    "site:build": "npm run build && npm run build -w site",
+    "site:deploy": "npm run site:build && npm run deploy -w site"
   },
   "peerDependencies": {
     "react": "^18.2.0 || ^19.0.0",

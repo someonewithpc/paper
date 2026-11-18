@@ -5,3 +5,4 @@ playwright-report/
 .direnv/
 .svelte-kit/
 .astro/
+.wrangler/
