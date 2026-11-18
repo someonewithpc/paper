@@ -15,7 +15,7 @@
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             git
-            nodejs_22
+            nodejs_24
           ];
 
           shellHook = ''

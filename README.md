@@ -397,7 +397,7 @@ The book works out how many pages fit with `sign()` over container units and ski
 
 ## Development
 
-The repository has a Nix flake with Node 22; `direnv allow` loads it.
+The repository has a Nix flake with Node 24; `direnv allow` loads it.
 
 ```sh
 npm run build          # dist/ JavaScript, declarations, the adapters and styles.css
