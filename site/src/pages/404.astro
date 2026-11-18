@@ -1,0 +1,30 @@
+---
+import Masthead from '../components/Masthead.astro';
+import Ruler from '../components/Ruler.astro';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found: @hsal/paper" description="There is no page at this address." noindex>
+  <Ruler />
+  <Masthead />
+  <main class="wrap missing">
+    <h1>No page here</h1>
+    <p>Nothing is printed at this address. The <a href="/">front page</a> has the stack, the book and the docs.</p>
+  </main>
+</Base>
+
+<style>
+  .missing {
+    display: grid;
+    gap: 1.25rem;
+    padding-block: 4rem;
+    max-width: var(--measure);
+    margin-inline: max(var(--gutter), (100% - var(--wide)) / 2);
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 1.6rem + 4vw, 4.5rem);
+    font-stretch: 68%;
+    font-weight: 820;
+  }
+</style>
