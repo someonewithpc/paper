@@ -11,7 +11,7 @@ import { rotateVec, type Vec } from '../internal/vec.js';
 import { pageIndexOf } from '../markup.js';
 import type { ResolvedStackOptions } from '../options.js';
 import type {
-  PaperDirection, PaperEventMap, PaperState, PaperTurnDetail, ResizeHoldSource,
+  PaperDirection, PaperEventMap, PaperStackState, PaperTurnDetail, ResizeHoldSource,
 } from '../types.js';
 import {
   coastAlong, coastMs, coastTip, commitPoint, foldSizeFromTip, foldTipFromSize, pagePentagon,
@@ -2047,7 +2047,7 @@ export function refreshStack(stack: HTMLElement): void {
   stirLanding(stack);
 }
 
-export function stackState(stack: HTMLElement): PaperState {
+export function stackState(stack: HTMLElement): PaperStackState {
   const ctx = contexts.get(stack);
   const index = Math.max(frontIndexOf(stack), 0);
   const count = stack.childElementCount;

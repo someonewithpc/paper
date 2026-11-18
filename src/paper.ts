@@ -6,7 +6,7 @@ import type {
   PaperOptions, PaperStackOptions,
 } from './types.js';
 
-type ModeFactory<M extends PaperMode> = (root: HTMLElement, options: PaperModeOptions[M]) => PaperController;
+type ModeFactory<M extends PaperMode> = (root: HTMLElement, options: PaperModeOptions[M]) => PaperController<M>;
 
 // A mode turns options into a controller. A new mode adds its options to PaperModeOptions and its
 // factory here, and the compiler asks for both.
@@ -21,6 +21,8 @@ const modeOf = (options: PaperOptions): PaperMode => options.mode ?? 'stack';
  * the pages, unless it already carries the markup {@link renderStack} writes. `data-paper-*`
  * attributes on `root` give options too; the ones passed here win.
  */
+export function createPaper(root: HTMLElement, options?: PaperStackOptions): PaperController<'stack'>;
+export function createPaper(root: HTMLElement, options?: PaperOptions): PaperController;
 export function createPaper(root: HTMLElement, options: PaperOptions = {}): PaperController {
   if (typeof window === 'undefined') throw new Error('createPaper needs a DOM; render the markup with renderStack on the server');
   const { options: fromData, errors } = parseDataOptions(root.dataset);
@@ -58,7 +60,7 @@ const keysOf = (root: HTMLElement): HTMLElement | null => {
   return null;
 };
 
-function createStack(root: HTMLElement, given: PaperStackOptions): PaperController {
+function createStack(root: HTMLElement, given: PaperStackOptions): PaperController<'stack'> {
   if (!isEnhanced(root)) enhanceStack(root, given);
   const options = resolveStackOptions(given);
   const count = root.childElementCount;
@@ -156,7 +158,7 @@ function createStack(root: HTMLElement, given: PaperStackOptions): PaperControll
     return !destroyed;
   };
 
-  const controller: PaperController = {
+  const controller: PaperController<'stack'> = {
     root,
     mode: 'stack',
     get state() {
