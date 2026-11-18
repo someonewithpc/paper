@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = Number(process.env['E2E_PORT'] ?? 4321);
+const ADAPTERS_PORT = Number(process.env['E2E_ADAPTERS_PORT'] ?? 4322);
 
 // Playwright's downloaded Chromium doesn't run on NixOS, so the specs drive a system Chrome.
 function systemChrome(): string {
@@ -35,11 +36,22 @@ export default defineConfig({
     { name: 'chromium', grepInvert: /@noscript/, use: chrome },
     { name: 'chromium-noscript', grep: /@noscript/, use: { ...chrome, javaScriptEnabled: false } },
   ],
-  webServer: {
-    command: `npm run build && node scripts/serve.mjs`,
-    url: `http://localhost:${PORT}/`,
-    reuseExistingServer: false,
-    timeout: 120_000,
-    env: { PORT: String(PORT) },
-  },
+  webServer: [
+    {
+      command: `npm run build && node scripts/serve.mjs`,
+      url: `http://localhost:${PORT}/`,
+      reuseExistingServer: false,
+      timeout: 120_000,
+      env: { PORT: String(PORT) },
+    },
+    {
+      // Renders the pages from the built adapters, which only exist once the build above is done,
+      // and no page is asked for before every server is up.
+      command: 'node scripts/serve-adapters.mjs',
+      url: `http://localhost:${ADAPTERS_PORT}/health`,
+      reuseExistingServer: false,
+      timeout: 120_000,
+      env: { PORT: String(ADAPTERS_PORT) },
+    },
+  ],
 });
