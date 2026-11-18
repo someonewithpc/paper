@@ -10,7 +10,7 @@
 <body>
   <main>
     <h1>Paper playground</h1>
-    <p><a href="/ssr.html">Server-rendered</a> · <a href="/playground/element.html">Custom element</a></p>
+    <p><a href="/ssr.html">Server-rendered</a> · <a href="/playground/element.html">Custom element</a> · <a href="/playground/stacks.html">Several stacks</a></p>
     <div id="plain" class="demo-stack" aria-label="Plain stack"></div>
     <p id="log" aria-live="off"></p>
   </main>
@@ -31,6 +31,7 @@
     if (params.has('start')) options.startPage = Number(params.get('start'));
     if (params.has('wrap')) options.wrap = params.get('wrap') !== 'false';
     if (params.has('motion')) options.reducedMotion = params.get('motion');
+    if (params.has('resizeHold')) options.resizeHold = params.get('resizeHold') !== 'false';
     const log = document.getElementById('log');
     const events = (window.paperEvents = []);
     const paper = createPaper(root, options);

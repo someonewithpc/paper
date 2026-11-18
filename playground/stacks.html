@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper, several stacks</title>
+  <link rel="stylesheet" href="/dist/styles.css">
+  <link rel="stylesheet" href="/playground/demo.css">
+</head>
+<body>
+  <main>
+    <h1>Several stacks</h1>
+    <p>Stacks a long way apart, for the dog-ear's reveal and pulse to wait on the one in view. The first is a plain cover over blueprint sheets.</p>
+    <div id="first" class="demo-stack" aria-label="First stack"></div>
+    <div class="tall"></div>
+    <div id="middle" class="demo-stack" aria-label="Middle stack"></div>
+    <div class="tall"></div>
+    <div id="last" class="demo-stack" aria-label="Last stack"></div>
+  </main>
+  <script type="module">
+    import { createPaper } from '/dist/index.js';
+    import { pages } from '/playground/pages.mjs';
+
+    const blueprint = '#1f4f8f';
+    const sheets = {
+      first: ['Cover', 'Plan', 'Section', 'Elevation', 'Detail'].map((title, index) => ({
+        html: `<section class="demo-page"><h2>First · ${title}</h2><p>Sheet ${index + 1} of 5.</p></section>`,
+        ...(index > 0 ? { surface: blueprint } : {}),
+      })),
+      middle: pages('Middle'),
+      last: pages('Last'),
+    };
+
+    window.papers = {};
+    for (const [id, list] of Object.entries(sheets)) {
+      const root = document.getElementById(id);
+      for (const page of list) {
+        const template = document.createElement('template');
+        template.innerHTML = page.html;
+        const element = template.content.firstElementChild;
+        if (page.surface) element.dataset.paperSurface = page.surface;
+        root.append(element);
+      }
+      window.papers[id] = createPaper(root);
+    }
+  </script>
+</body>
+</html>
