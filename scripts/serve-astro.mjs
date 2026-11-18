@@ -1,4 +1,4 @@
-// Builds the Astro playground against the package, linked in as @hsal/paper the way the adapter
+// Builds the Astro playground against the package, linked in as @someonewithpc/paper the way the adapter
 // pages are, and serves the build.
 import { join } from 'node:path';
 

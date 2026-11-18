@@ -1,6 +1,6 @@
 // Serves the framework adapters' playground pages from Vite in middleware mode: each page is
 // rendered on the server by the framework, then hydrated by its client entry. The adapters are
-// imported as `@hsal/paper/<framework>`, through a link to this package, so the pages use the
+// imported as `@someonewithpc/paper/<framework>`, through a link to this package, so the pages use the
 // built files and the export conditions a user's bundler would.
 import { mkdir, readFile, symlink } from 'node:fs/promises';
 import { createServer } from 'node:http';
@@ -13,8 +13,8 @@ const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const playground = join(root, 'playground/adapters');
 const port = Number(process.env.PORT ?? 4322);
 
-const link = join(playground, 'node_modules/@hsal/paper');
-await mkdir(join(playground, 'node_modules/@hsal'), { recursive: true });
+const link = join(playground, 'node_modules/@someonewithpc/paper');
+await mkdir(join(playground, 'node_modules/@someonewithpc'), { recursive: true });
 await symlink(root, link, 'dir').catch((error) => {
   if (error.code !== 'EEXIST') throw error;
 });

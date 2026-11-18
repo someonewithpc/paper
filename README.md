@@ -1,4 +1,4 @@
-# @hsal/paper
+# @someonewithpc/paper
 
 A stack of pages you turn by folding the corner. The front page has a dog-ear in its bottom-right corner: drag it past the middle and the page folds over and goes to the back of the stack, where turned pages pile up above the top edge. Grab the folded-back top-left corner to bring the last page back. A sideways wheel or trackpad scroll, a finger swipe and the arrow keys turn pages too.
 
@@ -13,7 +13,7 @@ The library has no dependencies and no framework. It ships ESM, TypeScript types
 ## Install
 
 ```sh
-npm install @hsal/paper
+npm install @someonewithpc/paper
 ```
 
 ## Quick start
@@ -23,8 +23,8 @@ npm install @hsal/paper
 Load the stylesheet and the custom element, then put one element per page inside `<paper-stack>`:
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/@hsal/paper/dist/styles.css">
-<script type="module" src="https://unpkg.com/@hsal/paper/dist/element.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@someonewithpc/paper/dist/styles.css">
+<script type="module" src="https://unpkg.com/@someonewithpc/paper/dist/element.js"></script>
 
 <paper-stack data-paper-stack aria-label="Field notes" style="aspect-ratio: 2 / 1">
   <section><h2>Monday</h2><p>…</p></section>
@@ -38,8 +38,8 @@ The `data-paper-stack` attribute in the HTML lets the no-script carousel style t
 ### JavaScript
 
 ```ts
-import { createPaper } from '@hsal/paper';
-import '@hsal/paper/styles.css';
+import { createPaper } from '@someonewithpc/paper';
+import '@someonewithpc/paper/styles.css';
 
 const paper = createPaper(document.querySelector('#notes')!, {
   wrap: false,
@@ -57,7 +57,7 @@ paper.state; // { mode: 'stack', index: 1, count: 3, turned: 1, … }
 `renderStack` returns the stack's HTML as a string, so a server can send the finished markup and the no-script carousel works from the first paint:
 
 ```ts
-import { renderStack } from '@hsal/paper';
+import { renderStack } from '@someonewithpc/paper';
 
 const html = renderStack({
   label: 'Field notes',
@@ -193,8 +193,8 @@ Drag the right-hand page's corner, top or bottom, across the spine to turn forwa
 ### HTML only
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/@hsal/paper/dist/styles.css">
-<script type="module" src="https://unpkg.com/@hsal/paper/dist/element.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@someonewithpc/paper/dist/styles.css">
+<script type="module" src="https://unpkg.com/@someonewithpc/paper/dist/element.js"></script>
 
 <paper-book data-paper-book aria-label="Atlas" data-paper-hard-covers style="aspect-ratio: 3 / 2">
   <section><h2>Atlas</h2></section>
@@ -209,8 +209,8 @@ Drag the right-hand page's corner, top or bottom, across the spine to turn forwa
 ### JavaScript
 
 ```ts
-import { createPaper } from '@hsal/paper';
-import '@hsal/paper/styles.css';
+import { createPaper } from '@someonewithpc/paper';
+import '@someonewithpc/paper/styles.css';
 
 const book = createPaper(document.querySelector('#atlas')!, {
   mode: 'book',
@@ -229,7 +229,7 @@ book.state; // { mode: 'book', spread: 3, pages: [5, 6], spreads: 6, display: 'd
 `renderBook` and `bookMarkup` take the same input as `renderStack` and `stackMarkup`, and `bookMarkup` returns the same parts:
 
 ```ts
-import { renderBook } from '@hsal/paper';
+import { renderBook } from '@someonewithpc/paper';
 
 const html = renderBook({
   label: 'Atlas',
@@ -275,18 +275,18 @@ The events are the stack's. `paper:change` fires as the turned leaf lands, and i
 
 ## Frameworks
 
-Each framework has its own entry point, with the framework as an optional peer dependency: `@hsal/paper/react`, `/vue`, `/svelte`, `/solid` and `/astro`. Each exports `<PaperStack>` and `<PaperBook>`, which take their mode's [options](#options) as props, so a book option on a stack is a type error. They render the markup on the server, hydrate it without a mismatch, call `createPaper` on mount and `destroy` on unmount.
+Each framework has its own entry point, with the framework as an optional peer dependency: `@someonewithpc/paper/react`, `/vue`, `/svelte`, `/solid` and `/astro`. Each exports `<PaperStack>` and `<PaperBook>`, which take their mode's [options](#options) as props, so a book option on a stack is a type error. They render the markup on the server, hydrate it without a mismatch, call `createPaper` on mount and `destroy` on unmount.
 
 There are no live setters. A changed option destroys the controller and makes a new one. When the markup changes too, with the page count or `startPage` say, the component renders a new root, because the script has moved the dog-ear and the clip between page wrappers and written their classes and styles. A new event callback needs neither.
 
-Besides the options, the components take `as` (the root's tag), `label`, `id`, `surfaces` (each page's `--paper-surface`, by index) and other HTML attributes for the root. Load `@hsal/paper/styles.css` once, as in the quick start. The Astro components import it themselves.
+Besides the options, the components take `as` (the root's tag), `label`, `id`, `surfaces` (each page's `--paper-surface`, by index) and other HTML attributes for the root. Load `@someonewithpc/paper/styles.css` once, as in the quick start. The Astro components import it themselves.
 
 ### React
 
 React 19. React 18 renders it on a server too, checked by hand. The module is marked `'use client'`. Each child element is a page. The ref is the controller, and `usePaper` gives you the controller and its state:
 
 ```tsx
-import { PaperStack, usePaper } from '@hsal/paper/react';
+import { PaperStack, usePaper } from '@someonewithpc/paper/react';
 
 function Notes({ days }: { days: Day[] }) {
   const paper = usePaper();
@@ -307,7 +307,7 @@ Vue 3.3 and later. The components are render functions compiled to JavaScript, s
 
 ```vue
 <script setup lang="ts">
-import { PaperBook, usePaper } from '@hsal/paper/vue';
+import { PaperBook, usePaper } from '@someonewithpc/paper/vue';
 
 defineProps<{ plates: Plate[] }>();
 const { ref: book, state } = usePaper<'book'>();
@@ -327,7 +327,7 @@ Svelte 5. A snippet can't be split into elements, so the pages come from a `page
 
 ```svelte
 <script lang="ts">
-  import { PaperStack, type PaperStackState } from '@hsal/paper/svelte';
+  import { PaperStack, type PaperStackState } from '@someonewithpc/paper/svelte';
 
   let { days }: { days: Day[] } = $props();
   let sheet: PaperStackState | null = $state(null);
@@ -346,7 +346,7 @@ Solid 1.8 and later. Solid 2 came out in November 2026 and its compiler plugins 
 
 ```tsx
 import { For } from 'solid-js';
-import { PaperBook, usePaper } from '@hsal/paper/solid';
+import { PaperBook, usePaper } from '@someonewithpc/paper/solid';
 
 function Atlas(props: { plates: Plate[] }) {
   const book = usePaper<'book'>();
@@ -369,7 +369,7 @@ With `pageCount`, the default slot is called once per index:
 
 ```astro
 ---
-import { PaperStack } from '@hsal/paper/astro';
+import { PaperStack } from '@someonewithpc/paper/astro';
 import Sheet from '../components/Sheet.astro';
 
 const sheets = [{ title: 'Monday' }, { title: 'Tuesday', surface: '#1f4f8f' }];
@@ -389,7 +389,7 @@ Without it, each top-level element of the default slot is a page:
 </PaperBook>
 ```
 
-A page is the HTML its slot rendered. The scripts and head content of the components in it go just before and after the root, so a slotted component keeps its `<script>`. To reach a controller, call `paperOf(root)` from `@hsal/paper/astro/client`. A script that may run before the components' own calls `enhanceAll()` first. `enhance={false}` leaves the root to your own `createPaper`.
+A page is the HTML its slot rendered. The scripts and head content of the components in it go just before and after the root, so a slotted component keeps its `<script>`. To reach a controller, call `paperOf(root)` from `@someonewithpc/paper/astro/client`. A script that may run before the components' own calls `enhanceAll()` first. `enhance={false}` leaves the root to your own `createPaper`.
 
 ## Browser notes
 

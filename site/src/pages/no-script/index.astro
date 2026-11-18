@@ -1,6 +1,6 @@
 ---
-import { renderBook, renderStack } from '@hsal/paper';
-import '@hsal/paper/styles.css';
+import { renderBook, renderStack } from '@someonewithpc/paper';
+import '@someonewithpc/paper/styles.css';
 
 import Base from '../../layouts/Base.astro';
 
@@ -29,7 +29,7 @@ const book = renderBook({
 });
 ---
 
-<Base title="@hsal/paper without JavaScript" description="The stack and the book as no-script carousels." noindex>
+<Base title="@someonewithpc/paper without JavaScript" description="The stack and the book as no-script carousels." noindex>
   <main class="frame">
     <h1 class="visually-hidden">A stack and a book without JavaScript</h1>
     <Fragment set:html={stack} />

@@ -7,7 +7,7 @@ import { build } from 'esbuild';
 
 // Measured from the package this build links, so the numbers on the page follow the source.
 const require = createRequire(join(process.cwd(), 'package.json'));
-const packageDir = dirname(require.resolve('@hsal/paper/package.json'));
+const packageDir = dirname(require.resolve('@someonewithpc/paper/package.json'));
 
 const kilobytes = (bytes: number) => `${(bytes / 1000).toFixed(1)} kB`;
 

@@ -1,6 +1,6 @@
 import { createSignal, For, Show } from 'solid-js';
 
-import { PaperBook, PaperStack, usePaper } from '@hsal/paper/solid';
+import { PaperBook, PaperStack, usePaper } from '@someonewithpc/paper/solid';
 
 import { bookPages, pageText, stackPages } from '../content.js';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@hsal/paper",
+  "name": "@someonewithpc/paper",
   "version": "0.1.0",
   "description": "A stack of paper pages you turn by folding the corner, or a book you turn across the spine, with a CSS carousel when scripting is off",
   "license": "GPL-3.0-or-later",
