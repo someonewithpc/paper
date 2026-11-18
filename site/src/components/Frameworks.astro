@@ -5,6 +5,7 @@ interface Framework {
   id: string;
   name: string;
   note: string;
+  install: string;
   file: string;
   lang: 'tsx' | 'vue' | 'svelte' | 'astro' | 'html';
   code: string;
@@ -13,11 +14,12 @@ interface Framework {
 const frameworks: Framework[] = [
   {
     id: 'react',
+    install: '@someonewithpc/paper-react',
     name: 'React',
     note: 'React 19, marked as a client module. Each child element is a page. The `ref` is the controller, and `usePaper` gives you the controller and its state.',
     file: 'Notes.tsx',
     lang: 'tsx',
-    code: `import { PaperStack, usePaper } from '@someonewithpc/paper/react';
+    code: `import { PaperStack, usePaper } from '@someonewithpc/paper-react';
 import '@someonewithpc/paper/styles.css';
 
 export function Notes({ days }: { days: Day[] }) {
@@ -34,12 +36,13 @@ export function Notes({ days }: { days: Day[] }) {
   },
   {
     id: 'vue',
+    install: '@someonewithpc/paper-vue',
     name: 'Vue',
     note: 'Vue 3.3 and later, as compiled render functions, so your bundler needs no loader. Each element of the default slot is a page, `v-for` included. The callbacks are the events `turn-start`, `turn-end`, `change` and `settle`.',
     file: 'Atlas.vue',
     lang: 'vue',
     code: `<script setup lang="ts">
-import { PaperBook, usePaper } from '@someonewithpc/paper/vue';
+import { PaperBook, usePaper } from '@someonewithpc/paper-vue';
 import '@someonewithpc/paper/styles.css';
 
 defineProps<{ plates: Plate[] }>();
@@ -55,12 +58,13 @@ const { ref: book, state } = usePaper<'book'>();
   },
   {
     id: 'svelte',
+    install: '@someonewithpc/paper-svelte',
     name: 'Svelte',
     note: "Svelte 5. A snippet can't be split into elements, so the pages come from a `page` snippet that runs once per index up to `pageCount`. `controller` and `state` are bindable.",
     file: 'Notes.svelte',
     lang: 'svelte',
     code: `<script lang="ts">
-  import { PaperStack, type PaperStackState } from '@someonewithpc/paper/svelte';
+  import { PaperStack, type PaperStackState } from '@someonewithpc/paper-svelte';
   import '@someonewithpc/paper/styles.css';
 
   let { days }: { days: Day[] } = $props();
@@ -75,12 +79,13 @@ const { ref: book, state } = usePaper<'book'>();
   },
   {
     id: 'solid',
+    install: '@someonewithpc/paper-solid',
     name: 'Solid',
     note: "Solid 1.8 and later. Solid 2's compiler plugins don't take the package yet. Each child element is a page, and `ref` gets each controller made, then `null` when it goes.",
     file: 'Atlas.tsx',
     lang: 'tsx',
     code: `import { For } from 'solid-js';
-import { PaperBook, usePaper } from '@someonewithpc/paper/solid';
+import { PaperBook, usePaper } from '@someonewithpc/paper-solid';
 import '@someonewithpc/paper/styles.css';
 
 export function Atlas(props: { plates: Plate[] }) {
@@ -97,12 +102,13 @@ export function Atlas(props: { plates: Plate[] }) {
   },
   {
     id: 'astro',
+    install: '@someonewithpc/paper-astro',
     name: 'Astro',
-    note: 'Astro 5 and later. The components import the stylesheet and start the script themselves. Options with a `data-paper-*` attribute are props. For the rest, listen for the `paper:*` events on the root, or get the controller with `paperOf` from `@someonewithpc/paper/astro/client`.',
+    note: 'Astro 5 and later. The components import the stylesheet and start the script themselves. Options with a `data-paper-*` attribute are props. For the rest, listen for the `paper:*` events on the root, or get the controller with `paperOf` from `@someonewithpc/paper-astro/client`.',
     file: 'Sheets.astro',
     lang: 'astro',
     code: `---
-import { PaperStack } from '@someonewithpc/paper/astro';
+import { PaperStack } from '@someonewithpc/paper-astro';
 import Sheet from '../components/Sheet.astro';
 
 const sheets = [{ title: 'Monday' }, { title: 'Tuesday', surface: '#1f4f8f' }];
@@ -114,6 +120,7 @@ const sheets = [{ title: 'Monday' }, { title: 'Tuesday', surface: '#1f4f8f' }];
   },
   {
     id: 'html',
+    install: '@someonewithpc/paper',
     name: 'HTML',
     note: 'No build step. `<paper-stack>` and `<paper-book>` are custom elements, and their options go in `data-paper-*` attributes. The `data-paper-stack` attribute styles the carousel before the element loads.',
     file: 'index.html',
@@ -134,8 +141,8 @@ const sheets = [{ title: 'Monday' }, { title: 'Tuesday', surface: '#1f4f8f' }];
   <div class="section-head">
     <h2 id="frameworks-title">Use it from your framework</h2>
     <p>
-      One package, with an entry point for each of 5 frameworks and the custom elements for everything else. Each
-      framework is an optional peer dependency, so you install only <code>@someonewithpc/paper</code>.
+      A package for each of 5 frameworks, and the custom elements for everything else. Each framework package has the
+      framework as a peer dependency and brings <code>@someonewithpc/paper</code> with it.
     </p>
   </div>
 
@@ -155,12 +162,12 @@ const sheets = [{ title: 'Monday' }, { title: 'Tuesday', surface: '#1f4f8f' }];
       ))}
     </div>
 
-    {frameworks.map(({ id, name, note, file, lang, code }) => (
+    {frameworks.map(({ id, name, note, install, file, lang, code }) => (
       <section class="panel sheet-paper" id={`panel-${id}`} aria-labelledby={`tab-${id}`} data-panel>
         <h3 class="panel-title">{name}</h3>
         <p class="note">{note.split('`').map((part, index) => (index % 2 ? <code>{part}</code> : part))}</p>
         <div class="install">
-          <Code lang="sh" theme="css-variables" code="npm install @someonewithpc/paper" />
+          <Code lang="sh" theme="css-variables" code={`npm install ${install}`} />
         </div>
         <figure class="usage">
           <figcaption>{file}</figcaption>
