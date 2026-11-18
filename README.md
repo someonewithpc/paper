@@ -6,7 +6,7 @@ Without JavaScript the same markup is a scroll-snap carousel, with arrows and do
 
 It also does books. In [book mode](#book-mode) you drag a page corner across the spine and the leaf curls over, showing what is printed on its back as it comes. The book shows a spread of two pages when it is wide and one page when it is narrow, and without JavaScript it is a carousel of spreads.
 
-The library has no dependencies and no framework. It ships ESM, TypeScript types and one plain CSS file. Components for React, Vue, Svelte, Solid and Astro come in the same package (see [Frameworks](#frameworks)).
+The library has no dependencies and no framework. It ships ESM, TypeScript types and one plain CSS file. Components for React, Vue, Svelte, Solid and Astro are separate packages (see [Frameworks](#frameworks)).
 
 [paper.js.hsal.es](https://paper.js.hsal.es) runs it: a stack and a book to turn, and the options, events and custom properties to try live.
 
@@ -15,6 +15,16 @@ The library has no dependencies and no framework. It ships ESM, TypeScript types
 ```sh
 npm install @someonewithpc/paper
 ```
+
+For a framework, install its package instead, which brings this one with it:
+
+| Framework | Package |
+| --- | --- |
+| React | `@someonewithpc/paper-react` |
+| Vue | `@someonewithpc/paper-vue` |
+| Svelte | `@someonewithpc/paper-svelte` |
+| Solid | `@someonewithpc/paper-solid` |
+| Astro | `@someonewithpc/paper-astro` |
 
 ## Quick start
 
@@ -275,7 +285,7 @@ The events are the stack's. `paper:change` fires as the turned leaf lands, and i
 
 ## Frameworks
 
-Each framework has its own entry point, with the framework as an optional peer dependency: `@someonewithpc/paper/react`, `/vue`, `/svelte`, `/solid` and `/astro`. Each exports `<PaperStack>` and `<PaperBook>`, which take their mode's [options](#options) as props, so a book option on a stack is a type error. They render the markup on the server, hydrate it without a mismatch, call `createPaper` on mount and `destroy` on unmount.
+Each framework has its own package, with the framework as a peer dependency and `@someonewithpc/paper` as a dependency on the same version: `@someonewithpc/paper-react`, `-vue`, `-svelte`, `-solid` and `-astro`. Each exports `<PaperStack>` and `<PaperBook>`, which take their mode's [options](#options) as props, so a book option on a stack is a type error. They render the markup on the server, hydrate it without a mismatch, call `createPaper` on mount and `destroy` on unmount.
 
 There are no live setters. A changed option destroys the controller and makes a new one. When the markup changes too, with the page count or `startPage` say, the component renders a new root, because the script has moved the dog-ear and the clip between page wrappers and written their classes and styles. A new event callback needs neither.
 
@@ -286,7 +296,7 @@ Besides the options, the components take `as` (the root's tag), `label`, `id`, `
 React 19. React 18 renders it on a server too, checked by hand. The module is marked `'use client'`. Each child element is a page. The ref is the controller, and `usePaper` gives you the controller and its state:
 
 ```tsx
-import { PaperStack, usePaper } from '@someonewithpc/paper/react';
+import { PaperStack, usePaper } from '@someonewithpc/paper-react';
 
 function Notes({ days }: { days: Day[] }) {
   const paper = usePaper();
@@ -307,7 +317,7 @@ Vue 3.3 and later. The components are render functions compiled to JavaScript, s
 
 ```vue
 <script setup lang="ts">
-import { PaperBook, usePaper } from '@someonewithpc/paper/vue';
+import { PaperBook, usePaper } from '@someonewithpc/paper-vue';
 
 defineProps<{ plates: Plate[] }>();
 const { ref: book, state } = usePaper<'book'>();
@@ -327,7 +337,7 @@ Svelte 5. A snippet can't be split into elements, so the pages come from a `page
 
 ```svelte
 <script lang="ts">
-  import { PaperStack, type PaperStackState } from '@someonewithpc/paper/svelte';
+  import { PaperStack, type PaperStackState } from '@someonewithpc/paper-svelte';
 
   let { days }: { days: Day[] } = $props();
   let sheet: PaperStackState | null = $state(null);
@@ -346,7 +356,7 @@ Solid 1.8 and later. Solid 2 came out in November 2026 and its compiler plugins 
 
 ```tsx
 import { For } from 'solid-js';
-import { PaperBook, usePaper } from '@someonewithpc/paper/solid';
+import { PaperBook, usePaper } from '@someonewithpc/paper-solid';
 
 function Atlas(props: { plates: Plate[] }) {
   const book = usePaper<'book'>();
@@ -369,7 +379,7 @@ With `pageCount`, the default slot is called once per index:
 
 ```astro
 ---
-import { PaperStack } from '@someonewithpc/paper/astro';
+import { PaperStack } from '@someonewithpc/paper-astro';
 import Sheet from '../components/Sheet.astro';
 
 const sheets = [{ title: 'Monday' }, { title: 'Tuesday', surface: '#1f4f8f' }];
@@ -389,7 +399,7 @@ Without it, each top-level element of the default slot is a page:
 </PaperBook>
 ```
 
-A page is the HTML its slot rendered. The scripts and head content of the components in it go just before and after the root, so a slotted component keeps its `<script>`. To reach a controller, call `paperOf(root)` from `@someonewithpc/paper/astro/client`. A script that may run before the components' own calls `enhanceAll()` first. `enhance={false}` leaves the root to your own `createPaper`.
+A page is the HTML its slot rendered. The scripts and head content of the components in it go just before and after the root, so a slotted component keeps its `<script>`. To reach a controller, call `paperOf(root)` from `@someonewithpc/paper-astro/client`. A script that may run before the components' own calls `enhanceAll()` first. `enhance={false}` leaves the root to your own `createPaper`.
 
 ## Browser notes
 
@@ -401,12 +411,14 @@ The book works out how many pages fit with `sign()` over container units and ski
 
 The repository has a Nix flake with Node 24; `direnv allow` loads it.
 
+It is an npm workspace. `packages/paper` is the core package, `packages/react`, `vue`, `svelte`, `solid` and `astro` are the adapters, `site/` is the landing page and `playground/` has the pages the e2e specs drive. The packages share one version.
+
 ```sh
-npm run build          # dist/ JavaScript, declarations, the adapters and styles.css
+npm run build          # each package's dist/: JavaScript, declarations and styles.css
 npm run typecheck      # tsc, svelte-check and astro check
 npm test               # unit tests
 npm run test:e2e       # Playwright specs against the playgrounds
-npm run check:package  # publint and arethetypeswrong
+npm run check:package  # publint and arethetypeswrong on each package
 npm run playground     # http://localhost:4320/
 npm run site:dev       # the landing page in site/, from Astro's dev server
 npm run site:build     # the library, then the landing page into site/dist/
