@@ -1,0 +1,91 @@
+---
+import { renderBook, renderStack } from '@hsal/paper';
+import '@hsal/paper/styles.css';
+
+import Base from '../../layouts/Base.astro';
+
+// The frame is sandboxed without scripts, and the Astro components bring one, which Chrome would
+// log as blocked. The package's string renderers write the same markup with no script.
+const sheets = ['A page is any element', 'Each page can have its own paper', 'The last page wraps around'];
+const leaves = ['Five folds', 'Valley fold', 'Mountain fold', 'Back cover'];
+
+const stack = renderStack({
+  label: 'Stack without script',
+  className: 'frame-stack',
+  pages: sheets.map((title, index) => ({
+    html: `<section class="frame-page${index === 1 ? ' blueprint' : ''}"><h2>${title}</h2><p>Page ${index + 1} of ${sheets.length}</p></section>`,
+    surface: index === 1 ? 'var(--blueprint)' : undefined,
+  })),
+});
+
+const book = renderBook({
+  label: 'Book without script',
+  className: 'frame-book',
+  options: { display: 'double' },
+  pages: leaves.map((title, index) => {
+    const cover = index === 0 || index === leaves.length - 1;
+    return { html: `<section class="frame-page${cover ? ' cover' : ''}"><h2>${title}</h2></section>`, surface: cover ? 'var(--cloth)' : undefined };
+  }),
+});
+---
+
+<Base title="@hsal/paper without JavaScript" description="The stack and the book as no-script carousels." noindex>
+  <main class="frame">
+    <h1 class="visually-hidden">A stack and a book without JavaScript</h1>
+    <Fragment set:html={stack} />
+    <Fragment set:html={book} />
+  </main>
+</Base>
+
+<style is:global>
+  .frame {
+    display: grid;
+    gap: 2.5rem 4rem;
+    align-items: start;
+    padding: 1.25rem 1.75rem 2rem;
+  }
+
+  @media (min-width: 40rem) {
+    .frame {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      padding-inline: 2.25rem;
+    }
+  }
+
+  .frame .frame-stack {
+    aspect-ratio: 3 / 2;
+  }
+
+  .frame .frame-book {
+    aspect-ratio: 296 / 210;
+  }
+
+  .frame-page {
+    display: grid;
+    align-content: start;
+    gap: 0.5rem;
+    padding: clamp(0.75rem, 6cqi, 2rem);
+    color: var(--ink);
+  }
+
+  .frame-page h2 {
+    font-size: clamp(1.125rem, 5cqi, 1.75rem);
+    font-stretch: 76%;
+  }
+
+  .frame-page p {
+    font-size: 0.875rem;
+    color: var(--ink-soft);
+  }
+
+  .blueprint {
+    --ink: var(--blueprint-ink);
+    --ink-soft: rgb(233 240 251 / 0.8);
+  }
+
+  .cover {
+    align-content: center;
+    justify-items: center;
+    color: var(--cloth-ink);
+  }
+</style>
