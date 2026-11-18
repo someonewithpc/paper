@@ -3,8 +3,8 @@
 // same markup from plain children (see enhance.ts).
 
 import { stableId } from './internal/hash.js';
-import { dataAttributesOf, resolveStackOptions } from './options.js';
-import type { PaperStackOptions } from './types.js';
+import { dataAttributesOf, resolveBookOptions, resolveStackOptions } from './options.js';
+import type { PaperBookOptions, PaperStackOptions } from './types.js';
 
 export type Attributes = Record<string, string>;
 
@@ -161,6 +161,57 @@ const rootAttributes = (own: Attributes, styles: string[], input: { className?: 
   return attributes;
 };
 
+/** Book options for markup: `mode` may be left out. */
+export type PaperBookMarkupOptions = Omit<PaperBookOptions, 'mode'> & { mode?: 'book' };
+
+export interface BookMarkupInput extends Omit<StackMarkupInput, 'options'> {
+  /** Written as `data-paper-*` attributes for the client to read back, and used for `startPage` and strings. */
+  options?: PaperBookMarkupOptions;
+}
+
+/** The book in parts, for renderers that have to place the pages themselves. Same shape as {@link StackMarkup}. */
+export type BookMarkup = StackMarkup;
+
+/** The page that shares a spread with `page` in double display, if any. */
+export const spreadPartnerOf = (page: number, count: number): number | undefined => {
+  if (page === 0) return undefined;
+  const partner = page % 2 === 1 ? page + 1 : page - 1;
+  return partner < count ? partner : undefined;
+};
+
+const BOOK_SHADE = '<div class="paper-book-shade" aria-hidden="true"></div>';
+
+export function bookMarkup(input: BookMarkupInput): BookMarkup {
+  const { pageCount: count, surfaces = [], options = {} } = input;
+  if (!Number.isInteger(count) || count < 1) throw new RangeError(`pageCount must be a whole number from 1, got ${count}`);
+  const tag = input.tag ?? 'div';
+  if (!TAG.test(tag)) throw new RangeError(`"${tag}" is not a tag name`);
+  const resolved = resolveBookOptions(options);
+  const start = resolved.startPage;
+  if (!Number.isInteger(start) || start < 0 || start >= count) {
+    throw new RangeError(`startPage must be a page index from 0 to ${count - 1}, got ${start}`);
+  }
+  const id = input.id ?? stableId(input.label ?? 'book', count);
+  const attributes = rootAttributes(
+    { 'data-paper-book': '' }, [`--paper-page-count: ${count}`], input, tag,
+    dataAttributesOf({ ...options, mode: 'book' }),
+  );
+
+  // Until the script places the pages, the start page shows, and the page it shares a spread with
+  // shows too wherever the stylesheet lays the book out two across.
+  const partner = spreadPartnerOf(start, count);
+  const pages = Array.from({ length: count }, (_, page): PageMarkup => {
+    const surface = surfaces[page];
+    const pageAttributes: Attributes = { class: 'paper-book-page' };
+    if (page === start) pageAttributes['data-paper-place'] = 'view';
+    else if (page === partner) pageAttributes['data-paper-place'] = 'pair';
+    if (surface) pageAttributes['style'] = `--paper-surface: ${surface}`;
+    return { attributes: pageAttributes, before: '', after: BOOK_SHADE };
+  });
+
+  return { tag, attributes, pages, after: rootSiblings(id, resolved) };
+}
+
 const renderPages = (markup: StackMarkup, pages: readonly PaperPageInput[]): string => {
   const inner = markup.pages
     .map((page, index) => `<div${attributesToString(page.attributes)}>${page.before}${pages[index]!.html}${page.after}</div>`)
@@ -170,6 +221,14 @@ const renderPages = (markup: StackMarkup, pages: readonly PaperPageInput[]): str
 
 const pageInputs = (pages: readonly (string | PaperPageInput)[]): PaperPageInput[] =>
   pages.map((page) => (typeof page === 'string' ? { html: page } : page));
+
+/** The whole book as one HTML string. Each page's `html` has to be exactly one element. */
+export function renderBook(input: Omit<BookMarkupInput, 'pageCount' | 'surfaces'> & {
+  pages: readonly (string | PaperPageInput)[];
+}): string {
+  const pages = pageInputs(input.pages);
+  return renderPages(bookMarkup({ ...input, pageCount: pages.length, surfaces: pages.map((page) => page.surface) }), pages);
+}
 
 /** The whole stack as one HTML string. Each page's `html` has to be exactly one element. */
 export function renderStack(input: Omit<StackMarkupInput, 'pageCount' | 'surfaces'> & {
