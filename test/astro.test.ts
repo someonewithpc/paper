@@ -1,7 +1,7 @@
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { describe, expect, it } from 'vitest';
 
-import PaperBook from '../packages/paper/src/astro/PaperBook.astro';
+import PaperBook from '../packages/astro/src/PaperBook.astro';
 import Stack from './fixtures/Stack.astro';
 
 describe('the Astro adapter on a server', () => {

@@ -1,8 +1,7 @@
 // The browser side of the Astro components: makes a controller for each root they rendered, on
 // load and after every view transition, and destroys the ones a transition took off the page.
 
-import { createPaper } from '../paper.js';
-import type { PaperController } from '../types.js';
+import { createPaper, type PaperController } from '@someonewithpc/paper';
 
 const controllers = new Map<HTMLElement, PaperController>();
 

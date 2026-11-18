@@ -1,9 +1,9 @@
 ---
-import { slotPages } from '../../dist/astro/slots.js';
-import type { PaperBookProps } from '../../dist/astro/types.js';
+import { slotPages } from '../dist/slots.js';
+import type { PaperStackProps } from '../dist/types.js';
 import Paper from './Paper.astro';
 
-type Props = PaperBookProps;
+type Props = PaperStackProps;
 
 const { pageCount, ...props } = Astro.props;
 // Each page stays the HTML the slot rendered, and its scripts and head content are written out
@@ -14,4 +14,4 @@ const rendered = pageCount === undefined
 const { pages, before, after } = slotPages(rendered, pageCount === undefined);
 ---
 
-{before}<Paper mode="book" pages={pages} {...props} />{after}
+{before}<Paper mode="stack" pages={pages} {...props} />{after}

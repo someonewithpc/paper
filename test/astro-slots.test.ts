@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { slotPages, topLevelElements } from '../packages/paper/src/astro/slots.js';
+import { slotPages, topLevelElements } from '../packages/astro/src/slots.js';
 
 describe('topLevelElements', () => {
   it('splits a fragment at its top-level elements', () => {

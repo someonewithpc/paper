@@ -1,0 +1,62 @@
+{
+  "name": "@someonewithpc/paper-astro",
+  "version": "0.1.0",
+  "description": "<PaperStack> and <PaperBook> for Astro: pages you turn by folding the corner, or across a book's spine",
+  "license": "GPL-3.0-or-later",
+  "author": "Hugo Sales <hugo@hsal.es>",
+  "homepage": "https://paper.js.hsal.es",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/someonewithpc/paper.git",
+    "directory": "packages/astro"
+  },
+  "bugs": {
+    "url": "https://github.com/someonewithpc/paper/issues"
+  },
+  "type": "module",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "*.astro"
+  ],
+  "keywords": [
+    "paper",
+    "page-turn",
+    "page-flip",
+    "book",
+    "flipbook",
+    "dog-ear",
+    "carousel",
+    "astro",
+    "astro-component",
+    "withastro"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints .",
+    "prepack": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@someonewithpc/paper": "^0.1.0"
+  },
+  "peerDependencies": {
+    "astro": ">=5.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

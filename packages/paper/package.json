@@ -32,14 +32,6 @@
       "types": "./dist/adapters/shared.d.ts",
       "default": "./dist/adapters/shared.js"
     },
-    "./astro": {
-      "types": "./src/astro/index.ts",
-      "default": "./src/astro/index.ts"
-    },
-    "./astro/client": {
-      "types": "./dist/astro/client.d.ts",
-      "default": "./dist/astro/client.js"
-    },
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
@@ -55,25 +47,15 @@
     "flipbook",
     "dog-ear",
     "carousel",
-    "custom-element",
-    "astro-component",
-    "astro"
+    "custom-element"
   ],
   "scripts": {
     "build": "npm run build:js && npm run build:css",
     "build:js": "tsc -p tsconfig.build.json",
     "build:css": "sass --no-source-map --style=expanded src/styles/paper.scss dist/styles.css",
     "clean": "rm -rf dist",
-    "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints styles.css astro",
+    "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints styles.css",
     "prepack": "npm run clean && npm run build && cp ../../README.md README.md"
-  },
-  "peerDependencies": {
-    "astro": ">=5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "astro": {
-      "optional": true
-    }
   },
   "engines": {
     "node": ">=20"

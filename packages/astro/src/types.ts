@@ -1,6 +1,6 @@
 import type { HTMLTag } from 'astro/types';
 
-import type { PaperBookDataOptions, PaperStackDataOptions } from '../options.js';
+import type { PaperBookDataOptions, PaperStackDataOptions } from '@someonewithpc/paper';
 
 type AttributeValue = string | number | boolean | null | undefined;
 

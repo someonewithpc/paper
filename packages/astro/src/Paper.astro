@@ -1,9 +1,8 @@
 ---
-import '../../dist/styles.css';
-import { markupOf, splitProps } from '../../dist/adapters/shared.js';
-import { elementsToString } from '../../dist/markup.js';
-import type { PaperMode } from '../../dist/types.js';
-import type { PaperComponentProps } from '../../dist/astro/types.js';
+import '@someonewithpc/paper/styles.css';
+import { elementsToString, type PaperMode } from '@someonewithpc/paper';
+import { markupOf, splitProps } from '@someonewithpc/paper/adapter';
+import type { PaperComponentProps } from '../dist/types.js';
 
 interface Props extends Omit<PaperComponentProps, 'pageCount'> {
   mode: PaperMode;
@@ -31,7 +30,7 @@ const Tag = (markup?.tag ?? 'div') as 'div';
 )}
 
 <script>
-  import { start } from '../../dist/astro/client.js';
+  import { start } from '../dist/client.js';
 
   start();
 </script>

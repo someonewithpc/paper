@@ -1,7 +1,7 @@
 // Type-level tests: `npm run typecheck` checks them, and vitest runs them as no-ops.
 import { describe, it } from 'vitest';
 
-import type { PaperBookProps, PaperStackProps } from '../packages/paper/src/astro/types.js';
+import type { PaperBookProps, PaperStackProps } from '../packages/astro/src/types.js';
 
 const never = (_: () => void) => {};
 
