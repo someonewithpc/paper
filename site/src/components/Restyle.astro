@@ -1,0 +1,251 @@
+---
+import { PaperStack } from '@hsal/paper/astro';
+import { Code } from 'astro:components';
+
+const lengths = [
+  { property: '--paper-radius', label: 'Corner radius', min: 0, max: 24, step: 1, value: 3, unit: 'px' },
+  { property: '--paper-splay', label: 'Fan angle', min: 0, max: 6, step: 0.25, value: 1.5, unit: 'deg' },
+  { property: '--paper-fold-rest-x', label: 'Dog-ear width', min: 0.5, max: 6, step: 0.25, value: 2, unit: 'cm' },
+  { property: '--paper-fold-rest-y', label: 'Dog-ear height', min: 0.5, max: 4, step: 0.25, value: 1, unit: 'cm' },
+  { property: '--paper-clip-lean-x', label: 'Folded-back corner, along the top', min: 1, max: 8, step: 0.25, value: 2.25, unit: 'em' },
+  { property: '--paper-clip-lean-y', label: 'Folded-back corner, down the side', min: 1, max: 8, step: 0.25, value: 4.5, unit: 'em' },
+];
+---
+
+<section class="section wrap" aria-labelledby="restyle-title">
+  <div class="section-head">
+    <h2 id="restyle-title">Restyle it with custom properties</h2>
+    <p>
+      The look is CSS custom properties, set anywhere above the stack. Move the controls and the stack below takes the
+      values, then <code>refresh()</code> measures its lengths again. Turn a page or two to see the folded-back corner.
+    </p>
+  </div>
+
+  <div class="restyle">
+    <div class="restyle-target" id="restyle-target">
+      <PaperStack id="restyle-stack" label="Restyled stack" class="restyle-stack">
+        <section class="plain">
+          <h3>Paper and ink</h3>
+          <p><code>--paper-sheet</code> is the paper. <code>--paper-ink</code> draws the focus ring and the arrows on the flap.</p>
+        </section>
+        <section class="plain">
+          <h3>The dog-ear</h3>
+          <p><code>--paper-fold-rest-x</code> and <code>-y</code> size the corner at rest. Centimetres keep it the same size on any screen.</p>
+        </section>
+        <section class="plain">
+          <h3>The fan</h3>
+          <p><code>--paper-splay</code> turns each page under this one a little further, by the log of its place.</p>
+        </section>
+      </PaperStack>
+    </div>
+
+    <form class="restyle-controls sheet-paper" aria-label="Custom properties">
+      <div class="colours">
+        <label><input type="color" data-property="--paper-sheet" /> Paper</label>
+        <label><input type="color" data-property="--paper-ink" /> Ink</label>
+      </div>
+      {lengths.map(({ property, label, min, max, step, value, unit }) => (
+        <label class="length">
+          <span>{label}</span>
+          <output>{value}{unit}</output>
+          <input type="range" data-property={property} data-unit={unit} min={min} max={max} step={step} value={value} />
+        </label>
+      ))}
+      <button class="button" type="reset">Reset</button>
+    </form>
+
+    <div class="restyle-css sheet-paper">
+      <Code lang="css" theme="css-variables" code={'.stack {\n}'} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .restyle {
+    display: grid;
+    gap: 2rem;
+  }
+
+  @media (min-width: 60rem) {
+    .restyle {
+      grid-template-columns: minmax(0, 1fr) 20rem;
+      align-items: start;
+    }
+
+    .restyle-css {
+      grid-column: 1;
+    }
+
+    .restyle-controls {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+  }
+
+  .restyle-target {
+    padding-top: 2rem;
+  }
+
+  .restyle-target :global(.restyle-stack) {
+    max-width: 36rem;
+    aspect-ratio: 3 / 2;
+  }
+
+  .plain {
+    display: grid;
+    align-content: start;
+    gap: 0.75rem;
+    padding: clamp(1.25rem, 6cqi, 2.5rem);
+    container-type: inline-size;
+    color: var(--ink);
+  }
+
+  .plain h3 {
+    font-size: clamp(1.25rem, 6cqi, 2rem);
+    font-stretch: 76%;
+  }
+
+  .plain p {
+    max-width: 28em;
+    font-size: clamp(0.875rem, 3.4cqi, 1.0625rem);
+  }
+
+  .restyle-controls {
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+  }
+
+  .colours {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .colours label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+  }
+
+  input[type='color'] {
+    width: 2.75rem;
+    height: 2rem;
+    padding: 0.125rem;
+    border: 1px solid var(--paper-edge);
+    border-radius: 3px;
+    background: var(--paper);
+    cursor: pointer;
+  }
+
+  .length {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.25rem 0.5rem;
+  }
+
+  .length output {
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-soft);
+  }
+
+  .length input {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0;
+    accent-color: var(--ink);
+  }
+
+  .restyle-controls .button {
+    justify-self: start;
+  }
+
+  .restyle-css {
+    min-width: 0;
+  }
+
+  @media (scripting: none) {
+    .restyle-controls,
+    .restyle-css {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { paperOf } from '@hsal/paper/astro/client';
+
+  const target = document.querySelector<HTMLElement>('#restyle-target')!;
+  const form = document.querySelector<HTMLFormElement>('.restyle-controls')!;
+  const output = document.querySelector<HTMLElement>('.restyle-css code')!;
+  const colours = [...form.querySelectorAll<HTMLInputElement>('input[type="color"]')];
+  const ranges = [...form.querySelectorAll<HTMLInputElement>('input[type="range"]')];
+
+  // A colour input takes only #rrggbb, so the page's current colours are read off a probe.
+  function hexOf(property: string): string {
+    const probe = document.createElement('span');
+    probe.style.color = `var(${property})`;
+    target.append(probe);
+    const [r = 0, g = 0, b = 0] = getComputedStyle(probe).color.match(/\d+/g)!.map(Number);
+    probe.remove();
+    return `#${[r, g, b].map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
+  }
+
+  for (const input of colours) {
+    input.defaultValue = hexOf(input.dataset['property']!);
+  }
+
+  function token(text: string, colour?: string): HTMLSpanElement {
+    const span = document.createElement('span');
+    span.textContent = text;
+    if (colour) span.style.color = `var(--astro-code-token-${colour})`;
+    return span;
+  }
+
+  function writeRule(lines: [string, string][]) {
+    const nodes: Node[] = [token('.stack', 'function'), token(' {\n')];
+    for (const [property, value] of lines) {
+      nodes.push(token('  '), token(property, 'constant'), token(': '), token(value, 'string'), token(';\n'));
+    }
+    nodes.push(token('}'));
+    output.replaceChildren(...nodes);
+  }
+
+  function luminance(hex: string): number {
+    const [r = 0, g = 0, b = 0] = [1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16) / 255);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+
+  let frame = 0;
+  function apply() {
+    const lines: [string, string][] = [];
+    for (const input of colours) {
+      const property = input.dataset['property']!;
+      const changed = input.value !== input.defaultValue;
+      target.style.setProperty(property, changed ? input.value : null);
+      if (changed) lines.push([property, input.value]);
+    }
+    // The page text is the site's, not the library's, so it follows the chosen paper to stay legible.
+    const paper = colours.find((input) => input.dataset['property'] === '--paper-sheet')!;
+    const light = paper.value !== paper.defaultValue && luminance(paper.value) > 0.4;
+    const dark = paper.value !== paper.defaultValue && !light;
+    target.style.setProperty('--ink', light ? '#1b2130' : dark ? '#e3e5e0' : null);
+    target.style.setProperty('--ink-soft', light ? '#545c6c' : dark ? '#aab0b2' : null);
+    for (const input of ranges) {
+      const property = input.dataset['property']!;
+      const value = `${input.value}${input.dataset['unit']}`;
+      const changed = input.value !== input.defaultValue;
+      target.style.setProperty(property, changed ? value : null);
+      input.previousElementSibling!.textContent = value;
+      if (changed) lines.push([property, value]);
+    }
+    writeRule(lines);
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => paperOf(document.querySelector('#restyle-stack'))?.refresh());
+  }
+
+  form.addEventListener('input', apply);
+  form.addEventListener('reset', () => setTimeout(apply));
+</script>
