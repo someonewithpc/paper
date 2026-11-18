@@ -110,22 +110,14 @@ export function stackMarkup(input: StackMarkupInput): StackMarkup {
   const id = input.id ?? stableId(input.label ?? 'stack', count);
 
   const styles = [`--paper-page-count: ${count}`];
-  const attributes: Attributes = { 'data-paper-stack': '' };
+  const own: Attributes = { 'data-paper-stack': '' };
   if (start > 0) {
-    attributes['data-paper-flipped'] = '';
+    own['data-paper-flipped'] = '';
     styles.push(`--paper-pages-turned: ${start}`);
     const pile = surfaces[start - 1];
     if (pile) styles.push(`--paper-pile-surface: ${pile}`);
   }
-  if (input.className) attributes['class'] = input.className;
-  if (tag !== 'article') attributes['role'] = 'group';
-  if (input.label) attributes['aria-label'] = input.label;
-  Object.assign(attributes, dataAttributesOf(options));
-  const extra = { ...input.attributes };
-  const extraStyle = extra['style'];
-  delete extra['style'];
-  Object.assign(attributes, extra);
-  attributes['style'] = [...styles, ...(extraStyle ? [extraStyle] : [])].join('; ');
+  const attributes = rootAttributes(own, styles, input, tag, dataAttributesOf(options));
 
   const chrome = frontChrome(id, resolved.decorations);
   const pages = Array.from({ length: count }, (_, page): PageMarkup => {
@@ -139,23 +131,50 @@ export function stackMarkup(input: StackMarkupInput): StackMarkup {
     };
   });
 
-  // The live region is a sibling, not a child: every child of the stack is a page.
-  let after = '<div class="paper-sr-only" role="status" data-paper-status></div>';
-  if (resolved.describedBy === undefined && resolved.interactions.keyboard) {
-    after += `<span hidden id="paper-keys-${escapeAttribute(id)}" data-paper-keys>${escapeText(resolved.strings.keys)}</span>`;
-  }
-
-  return { tag, attributes, pages, after };
+  return { tag, attributes, pages, after: rootSiblings(id, resolved) };
 }
+
+// The live region is a sibling, not a child: every child of the root is a page.
+const rootSiblings = (
+  id: string, { describedBy, interactions, strings }: { describedBy: string | undefined, interactions: { keyboard: boolean }, strings: { keys: string } },
+): string => {
+  let after = '<div class="paper-sr-only" role="status" data-paper-status></div>';
+  if (describedBy === undefined && interactions.keyboard) {
+    after += `<span hidden id="paper-keys-${escapeAttribute(id)}" data-paper-keys>${escapeText(strings.keys)}</span>`;
+  }
+  return after;
+};
+
+// The root's attributes: its own, then the options as data attributes, then the caller's, with
+// the caller's style after the root's own.
+const rootAttributes = (own: Attributes, styles: string[], input: { className?: string, label?: string, attributes?: Attributes }, tag: string, data: Attributes): Attributes => {
+  const attributes: Attributes = { ...own };
+  if (input.className) attributes['class'] = input.className;
+  if (tag !== 'article') attributes['role'] = 'group';
+  if (input.label) attributes['aria-label'] = input.label;
+  Object.assign(attributes, data);
+  const extra = { ...input.attributes };
+  const extraStyle = extra['style'];
+  delete extra['style'];
+  Object.assign(attributes, extra);
+  attributes['style'] = [...styles, ...(extraStyle ? [extraStyle] : [])].join('; ');
+  return attributes;
+};
+
+const renderPages = (markup: StackMarkup, pages: readonly PaperPageInput[]): string => {
+  const inner = markup.pages
+    .map((page, index) => `<div${attributesToString(page.attributes)}>${page.before}${pages[index]!.html}${page.after}</div>`)
+    .join('');
+  return `<${markup.tag}${attributesToString(markup.attributes)}>${inner}</${markup.tag}>${markup.after}`;
+};
+
+const pageInputs = (pages: readonly (string | PaperPageInput)[]): PaperPageInput[] =>
+  pages.map((page) => (typeof page === 'string' ? { html: page } : page));
 
 /** The whole stack as one HTML string. Each page's `html` has to be exactly one element. */
 export function renderStack(input: Omit<StackMarkupInput, 'pageCount' | 'surfaces'> & {
   pages: readonly (string | PaperPageInput)[];
 }): string {
-  const pages = input.pages.map((page) => (typeof page === 'string' ? { html: page } : page));
-  const markup = stackMarkup({ ...input, pageCount: pages.length, surfaces: pages.map((page) => page.surface) });
-  const inner = markup.pages
-    .map((page, index) => `<div${attributesToString(page.attributes)}>${page.before}${pages[index]!.html}${page.after}</div>`)
-    .join('');
-  return `<${markup.tag}${attributesToString(markup.attributes)}>${inner}</${markup.tag}>${markup.after}`;
+  const pages = pageInputs(input.pages);
+  return renderPages(stackMarkup({ ...input, pageCount: pages.length, surfaces: pages.map((page) => page.surface) }), pages);
 }
