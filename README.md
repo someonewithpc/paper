@@ -4,6 +4,8 @@ A stack of pages you turn by folding the corner. The front page has a dog-ear in
 
 Without JavaScript the same markup is a scroll-snap carousel, with arrows and dots in browsers that draw CSS carousels and the next page's edge peeking in elsewhere.
 
+It also does books. In [book mode](#book-mode) you drag a page corner across the spine and the leaf curls over, showing what is printed on its back as it comes. The book shows a spread of two pages when it is wide and one page when it is narrow, and without JavaScript it is a carousel of spreads.
+
 The library has no dependencies and no framework. It ships ESM, TypeScript types and one plain CSS file.
 
 ## Install
@@ -79,7 +81,7 @@ Each page fills its wrapper and gets `background: var(--paper-surface)` at zero 
 
 | Option | Attribute | Default | What it does |
 | --- | --- | --- | --- |
-| `mode` | `data-paper-mode` | `'stack'` | The only mode so far |
+| `mode` | `data-paper-mode` | `'stack'` | `'book'` for [book mode](#book-mode), which has options of its own |
 | `startPage` | `data-paper-start-page` | `0` | Page at the front on load, with the ones before it already turned |
 | `wrap` | `data-paper-wrap` | `true` | Turning the last page forward brings the first one back |
 | `interactions.drag` | `data-paper-drag` | `true` | Drag the dog-ear |
@@ -100,17 +102,17 @@ Each page fills its wrapper and gets `background: var(--paper-surface)` at zero 
 | `pageTitle` | | `data-paper-title`, `aria-label`, first heading | A page's title for `announce` |
 | `onTurnStart`, `onTurnEnd`, `onChange`, `onSettle` | | | Callbacks for the events below |
 
-Boolean attributes take `true`, `false` or no value. An attribute with a value it can't take logs a warning and is ignored. Options passed in code win over attributes.
+Boolean attributes take `true`, `false` or no value. An attribute with a value it can't take, or one the mode doesn't take, logs a warning and is ignored. Options passed in code win over attributes.
 
 `PaperOptions` is a union keyed on `mode`, so TypeScript narrows the rest of the options once `mode` is known.
 
 ## Controller
 
 ```ts
-interface PaperController {
+interface PaperController<M extends 'stack' | 'book'> {
   readonly root: HTMLElement;
-  readonly mode: 'stack';
-  readonly state: PaperState;
+  readonly mode: M;
+  readonly state: PaperStateMap[M];
   next(): Promise<boolean>;
   prev(): Promise<boolean>;
   goTo(index: number, options?: { animate?: boolean }): Promise<boolean>;
@@ -123,7 +125,9 @@ interface PaperController {
 
 `next` and `prev` resolve once the turn has settled, or `false` at once when there is nowhere to go. `goTo` jumps to the page before the target and animates the last turn; with `animate: false` it jumps outright. Pages before the front one are in the pile, so going back to them turns pages back, and going forward turns pages away. `refresh` re-reads the lengths the stack caches, after you change its font size or custom properties. `destroy` removes the listeners and observers and leaves the pages where they are.
 
-`<paper-stack>` has `next`, `prev`, `goTo`, `state` and `controller`, and an `options` property read when it connects.
+`createPaper` returns `PaperController<'stack'>` for stack options and `PaperController<'book'>` for book options, so `state` and the event details come typed for the mode.
+
+`<paper-stack>` and `<paper-book>` have `next`, `prev`, `goTo`, `state` and `controller`, and an `options` property read when they connect.
 
 ## Events
 
@@ -162,6 +166,7 @@ Set these anywhere above the stack.
 | `--paper-carousel-peek` | `1.75rem` | How much of the next page shows without script, in browsers without CSS carousels |
 | `--paper-page-block-size` | | The page's height for that fallback, needed when the stack is a size container |
 | `--paper-dot-size`, `--paper-dot-mat` | `0.5rem`, `1rem` | The carousel's dots and the margin they sit in |
+| `--paper-book-double-from` | `40rem` | The book width from which `display: 'auto'` shows two pages |
 
 The defaults for colours use `light-dark()`, so they follow the page's `color-scheme`. The no-script carousel labels its controls "Previous page", "Next page" and "Page N"; override `content` on `::scroll-button()` and `::scroll-marker` to change them.
 
@@ -175,10 +180,102 @@ The other `--paper-*` properties are internal state the script writes. They are 
 - A live region beside the stack announces the new page once a turn has settled, one announcement per turn and none on load
 - Under `prefers-reduced-motion: reduce`, or `reducedMotion: 'reduce'`, turns land at once and the dog-ear stays still. A drag still follows the hand
 - Without script every page is readable in the carousel, and the carousel's dots are one tab stop
+- A book is a `group` with `aria-roledescription="book"`. Its pages out of view are `inert` and skip rendering. If a turn takes away the page that holds focus, focus goes back to the book. The live region reads "Pages 4 and 5 of 10" and the first page's title
+
+## Book mode
+
+Pass `mode: 'book'`, or write `data-paper-mode="book"` on the root. Each element child is a page, in reading order. In double display the first page is the front cover, on the right on its own, and after it the pages go in pairs: 2 and 3, 4 and 5, and so on. A spread is what shows at once: one page in single display, a pair in double.
+
+Drag the right-hand page's corner, top or bottom, across the spine to turn forward, and the left-hand page's corner to turn back. In single display, drag the page's left edge to bring the previous page back. Let go a quarter of the way across, or throw it, and the leaf goes over; short of that it lies back down. A sideways wheel or swipe, the arrow keys, Page Up, Page Down, Home and End turn pages too. A mouse near a corner lifts it a little.
+
+### HTML only
+
+```html
+<link rel="stylesheet" href="https://unpkg.com/@hsal/paper/dist/styles.css">
+<script type="module" src="https://unpkg.com/@hsal/paper/dist/element.js"></script>
+
+<paper-book data-paper-book aria-label="Atlas" data-paper-hard-covers style="aspect-ratio: 3 / 2">
+  <section><h2>Atlas</h2></section>
+  <section><h2>Contents</h2></section>
+  <section><h2>North</h2></section>
+  <section><h2>South</h2></section>
+</paper-book>
+```
+
+`<paper-book>` is a book whatever `data-paper-mode` says. It has a tag of its own, not `<paper-stack mode="book">`, because the book's styles key on `data-paper-book` from the first paint, before the element is defined.
+
+### JavaScript
+
+```ts
+import { createPaper } from '@hsal/paper';
+import '@hsal/paper/styles.css';
+
+const book = createPaper(document.querySelector('#atlas')!, {
+  mode: 'book',
+  display: 'double',
+  onChange: ({ spread, pages }) => console.log('spread', spread, 'shows pages', pages),
+});
+
+await book.goTo(5);
+book.state; // { mode: 'book', spread: 3, pages: [5, 6], spreads: 6, display: 'double', index: 5, … }
+```
+
+`goTo`, `next` and `prev` work in spreads: `goTo(page)` opens the spread that holds the page.
+
+### Server rendering
+
+`renderBook` and `bookMarkup` take the same input as `renderStack` and `stackMarkup`, and `bookMarkup` returns the same parts:
+
+```ts
+import { renderBook } from '@hsal/paper';
+
+const html = renderBook({
+  label: 'Atlas',
+  pages: ['<section><h2>Atlas</h2></section>', { html: '<section><h2>Plates</h2></section>', surface: '#1f4f8f' }],
+  options: { display: 'auto', startPage: 0 },
+});
+```
+
+Until the script runs, the start page shows, along with the page it shares a spread with when the book is wide enough for two.
+
+### Sizing
+
+Size the book as a whole, with an `aspect-ratio` or a height. In double display each page takes half the width. The book is an inline-size container, so `display: 'auto'` follows the book's own width, not the window's: two pages from `--paper-book-double-from` (`40rem`) up, one below it.
+
+### Book options
+
+| Option | Attribute | Default | What it does |
+| --- | --- | --- | --- |
+| `mode` | `data-paper-mode` | | `'book'` |
+| `display` | `data-paper-display` | `'auto'` | `'single'`, `'double'`, or `'auto'` to follow the book's width |
+| `startPage` | `data-paper-start-page` | `0` | Opens the book at the spread that holds this page |
+| `hardCovers` | `data-paper-hard-covers` | `false` | The first and last leaves are stiff boards that swing about the spine instead of curling |
+| `autoCenter` | `data-paper-auto-center` | `true` | In double display, the cover alone or the back alone slides to the middle |
+| `shading` | `data-paper-shading` | `true` | Shade the curl, the shadow it casts and the gutter |
+| `interactions.drag` | `data-paper-drag` | `true` | Drag a corner across the spine |
+| `interactions.keyboard` | `data-paper-keyboard` | `true` | Arrow keys, Page Up, Page Down, Home and End on the focused book |
+| `interactions.wheel` | `data-paper-wheel` | `true` | Sideways wheel and trackpad scrolls |
+| `interactions.swipe` | `data-paper-swipe` | `true` | Sideways finger and pen swipes |
+| `interactions.tease` | `data-paper-tease` | `true` | A corner lifts as the mouse nears it |
+| `reducedMotion` | `data-paper-reduced-motion` | `'system'` | `'reduce'` lands every played turn at once. A drag still follows the hand |
+| `strings.roleDescription` | `data-paper-role-description` | `'book'` | The book's `aria-roledescription` |
+| `strings.keys` | `data-paper-keys` | `'The left and right arrow keys turn the pages, Home and End go to the covers'` | Hidden text the book is described by |
+| `describedBy`, `themeAttributes`, `pageTitle`, callbacks | | | As for the stack |
+| `announce` | | `Pages N and N+1 of M: title` | Text for the live region after a turn, told the spread and the pages too |
+
+`wrap`, `decorations`, `resizeHold` and `interactions.backGrab` are the stack's, and TypeScript rejects them on a book.
+
+### Book state and events
+
+`state` has `spread`, `spreads`, `pages` (the DOM indices in view, left to right) and `display` (what `auto` resolved to), as well as `index` (the first page in view), `count`, `settled`, `turning`, `canPrev` and `canNext`.
+
+The events are the stack's. `paper:change` fires as the turned leaf lands, and its detail, like `paper:settle`'s, also carries `spread` and `pages`. `index` and `turned` are both the first page in view. A change of display on resize fires nothing; read `state` after it.
 
 ## Browser notes
 
 The scripted stack needs `@property`, `light-dark()` and the CSS math functions, `sign()` and `log()` among them. Chrome and Edge 138, Firefox 128 and Safari 18 have all of them. The no-script carousel draws arrows and dots where `::scroll-button()` and `::scroll-marker` exist, and shows the next page's edge elsewhere.
+
+The book works out how many pages fit with `sign()` over container units and skips pages out of view with `content-visibility`, both in the same browsers. Its no-script dots hide the right-hand page's dot with a style query from the page's `::scroll-marker`, tested in Chrome only.
 
 ## Development
 
