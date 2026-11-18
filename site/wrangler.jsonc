@@ -1,0 +1,12 @@
+{
+  "name": "paper-site",
+  "compatibility_date": "2026-11-17",
+  "workers_dev": false,
+  "preview_urls": false,
+  // Static assets only: Astro's build, with no Worker script in front of it.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "routes": [{ "pattern": "paper.hsal.es", "custom_domain": true }]
+}
