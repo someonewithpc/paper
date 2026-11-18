@@ -411,7 +411,7 @@ The book works out how many pages fit with `sign()` over container units and ski
 
 The repository has a Nix flake with Node 24; `direnv allow` loads it.
 
-It is an npm workspace. `packages/paper` is the core package, `packages/react`, `vue`, `svelte`, `solid` and `astro` are the adapters, `site/` is the landing page and `playground/` has the pages the e2e specs drive. The packages share one version.
+It is an npm workspace. `packages/paper` is the core package, `packages/react`, `vue`, `svelte`, `solid` and `astro` are the adapters, `site/` is the landing page and `playground/` has the pages the e2e specs drive.
 
 ```sh
 npm run build          # each package's dist/: JavaScript, declarations and styles.css
@@ -424,9 +424,12 @@ npm run site:dev       # the landing page in site/, from Astro's dev server
 npm run site:build     # the library, then the landing page into site/dist/
 npm run site:deploy    # site:build, then wrangler deploy to paper.js.hsal.es
 npm run test:e2e -w site  # the landing page's smoke and axe specs
+npm run release        # check:package, then npm publish of the six packages
 ```
 
 The e2e run also serves the adapter pages from Vite, rendered on the server and hydrated, at `http://localhost:4322/<framework>/`, and a built Astro site at `http://localhost:4323/`. `node scripts/serve-adapters.mjs` and `node scripts/serve-astro.mjs` start them on their own.
+
+The packages share one version, and each adapter depends on `@someonewithpc/paper` with a caret range on it. To release a new version, set it in every `packages/*/package.json` and in the adapters' ranges, run `npm install` to update the lockfile, then `npm run release`, which runs `npm publish --workspaces --access public` once the checks pass. npm skips `site/` and `playground/`, which are private.
 
 ## License
 
