@@ -84,7 +84,8 @@ const countLive = () => {
 export async function openAdapter(page: Page, framework: string): Promise<{ stack: Locator, book: Locator }> {
   await page.addInitScript(countLive);
   await page.goto(`${ADAPTERS_URL}/${framework}/`);
-  await expect(page.locator('#stack-state')).not.toHaveText('none');
+  // A page's first load on a cold dev server waits for its modules to compile.
+  await expect(page.locator('#stack-state')).not.toHaveText('none', { timeout: 30_000 });
   await expect(page.locator('#book-state')).not.toHaveText('none');
   const stack = page.locator('#stack');
   const book = page.locator('#book');
