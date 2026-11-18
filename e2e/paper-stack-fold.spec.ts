@@ -1,0 +1,403 @@
+import { expect, type Locator, type Page, test } from '@playwright/test';
+
+import { flapGrip } from './support/fold.js';
+import { dogEarShown, frontPageIndex, frontPageName, playgroundStack, pressTurn, swipeStack } from './support/paperStack.js';
+
+const PAGES = ['Plain · Cover', 'Plain · Contents', 'Plain · Blueprint', 'Plain · Notes', 'Plain · Back matter'];
+
+// The stack paints in light-dark() pairs, so the two colour schemes are its two themes.
+const SCHEMES = ['dark', 'light'] as const;
+
+test.beforeEach(async ({ page }) => {
+  await page.goto('/');
+});
+
+test('forward swipes visit every page in order, then wrap', async ({ page }) => {
+  const stack = playgroundStack(page);
+  await stack.scrollIntoViewIfNeeded();
+  await dogEarShown(stack);
+
+  expect(await stack.locator(':scope > div').count()).toBe(PAGES.length);
+  expect(await frontPageIndex(stack)).toBe(0);
+  expect(await frontPageName(stack)).toBe(PAGES[0]);
+
+  for (let i = 1; i < PAGES.length; i += 1) {
+    await swipeStack(page, stack, true);
+    expect(await frontPageName(stack), `page ${i} after ${i} forward swipe(s)`).toBe(PAGES[i]);
+  }
+
+  // One more forward swipe past the last page wraps back to the first.
+  await swipeStack(page, stack, true);
+  expect(await frontPageName(stack)).toBe(PAGES[0]);
+});
+
+test('a backward swipe is clamped at the first page', async ({ page }) => {
+  const stack = playgroundStack(page);
+  await stack.scrollIntoViewIfNeeded();
+  await dogEarShown(stack);
+
+  expect(await frontPageName(stack)).toBe(PAGES[0]);
+
+  // Nothing behind the front page: a backward swipe here is a no-op, not a wrap.
+  await swipeStack(page, stack, false);
+  expect(await frontPageName(stack)).toBe(PAGES[0]);
+  await swipeStack(page, stack, false);
+  expect(await frontPageName(stack)).toBe(PAGES[0]);
+});
+
+test('a horizontal swipe then a vertical wheel without a mouse move scrolls the page', async ({ page }) => {
+  const stack = playgroundStack(page);
+  await stack.scrollIntoViewIfNeeded();
+  await dogEarShown(stack);
+
+  for (const forward of [false, true]) {
+    await swipeStack(page, stack, forward);
+    const before = await page.evaluate(() => scrollY);
+    for (let i = 0; i < 3; i += 1) {
+      await page.mouse.wheel(0, 40);
+      await page.waitForTimeout(20);
+    }
+    await expect.poll(() => page.evaluate(() => scrollY), {
+      message: forward ? 'after a forward swipe' : 'after a declined back swipe',
+    }).toBeGreaterThan(before);
+  }
+});
+
+test('the dog-ear repaints when the colour scheme changes', async ({ page }) => {
+  const stack = playgroundStack(page);
+  await stack.scrollIntoViewIfNeeded();
+  await dogEarShown(stack);
+
+  // The flap paints the back of the sheet in the page's own colour, which it can't read off the
+  // page itself (it is the page's sibling), so a scheme switch has to reach it too.
+  for (const colorScheme of SCHEMES) {
+    await page.emulateMedia({ colorScheme });
+    const paint = await stack.evaluate((el) => {
+      const fold = el.querySelector<HTMLElement>('.paper-fold')!;
+      const sheet = fold.parentElement!;
+      const section = sheet.querySelector<HTMLElement>(
+        ':scope > :not(.paper-fold, .paper-back-grab, .paper-clip, .paper-clip-under, .paper-flip-hint)',
+      )!;
+      return { fold: getComputedStyle(fold).backgroundColor, page: getComputedStyle(section).backgroundColor };
+    });
+    expect(paint.fold, `dog-ear under the ${colorScheme} scheme`).toBe(paint.page);
+  }
+});
+
+test('every page paints the back of its sheet in its own paper, in both colour schemes', async ({ page }) => {
+  // A page's back is picked apart from its face, so a page whose two disagree shows here as a band
+  // of the wrong colour.
+  for (const colorScheme of SCHEMES) {
+    await page.emulateMedia({ colorScheme });
+    const papers = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('[data-paper-stack] > div')].map((sheet, index) => ({
+        page: index,
+        face: getComputedStyle(sheet.querySelector(':scope > section')!).backgroundColor,
+        back: getComputedStyle(sheet, '::after').backgroundColor,
+      })),
+    );
+    expect(papers.length).toBeGreaterThan(0);
+    for (const { page: index, face, back } of papers) expect(back, `page ${index + 1} under the ${colorScheme} scheme`).toBe(face);
+  }
+});
+
+test('the dog-ear is lit at its tip and shaded along the crease', async ({ page }) => {
+  const stack = playgroundStack(page);
+  await stack.scrollIntoViewIfNeeded();
+  await dogEarShown(stack);
+
+  // The flap's darkening gradient runs along the crease's normal from the page's bottom-right
+  // corner, where the crease lies fold-x·sin(a) in. Its darkest stop has to sit on the crease
+  // with a lighter stop either side of it: the corner is where the sheet lies flat and catches
+  // the light, whichever of the flap's two renderings puts the corner nearer 0 or 2·crease.
+  for (const colorScheme of SCHEMES) {
+    await page.emulateMedia({ colorScheme });
+
+    const shade = await stack.evaluate((el) => {
+      const fold = el.querySelector<HTMLElement>('.paper-fold')!;
+      const sheet = getComputedStyle(fold.parentElement!);
+      const x = Number.parseFloat(sheet.getPropertyValue('--paper-fold-x'));
+      const y = Number.parseFloat(sheet.getPropertyValue('--paper-fold-y'));
+      const stops = [...getComputedStyle(fold).backgroundImage.matchAll(/rgba\(0, 0, 0, ([\d.]+)\) ([\d.]+)px/g)]
+        .map((match) => ({ alpha: Number(match[1]), at: Number(match[2]) }))
+        .sort((a, b) => a.at - b.at);
+      return { crease: x * Math.sin(Math.atan2(y, x)), stops };
+    });
+    expect(shade.stops, `dark stops under the ${colorScheme} scheme`).toHaveLength(3);
+    const [near, crease, far] = shade.stops as [typeof shade.stops[0], typeof shade.stops[0], typeof shade.stops[0]];
+    expect(Math.abs(crease.at - shade.crease)).toBeLessThan(1);
+    expect(near.at).toBeLessThan(shade.crease);
+    expect(far.at).toBeGreaterThan(shade.crease);
+    expect(crease.alpha).toBeGreaterThan(near.alpha);
+    expect(crease.alpha).toBeGreaterThan(far.alpha);
+  }
+});
+
+test('a back-drag shades the crease from its first move', async ({ page }) => {
+  const stack = playgroundStack(page);
+  await stack.scrollIntoViewIfNeeded();
+  await dogEarShown(stack);
+  await pressTurn(stack, 'ArrowRight');
+
+  // A short pull on the folded-back corner: the previous page starts to fold up behind the
+  // stack, well short of coming over the clip, and its crease has to be shaded already.
+  const grab = await stack.locator('.paper-front > .paper-back-grab').boundingBox();
+  const grip = { x: grab!.x + grab!.width * 0.4, y: grab!.y + grab!.height * 0.4 };
+  await page.mouse.move(grip.x, grip.y);
+  await page.mouse.down();
+  for (let i = 1; i <= 8; i += 1) {
+    await page.mouse.move(grip.x + 5 * i, grip.y + 5 * i);
+    await page.waitForTimeout(20);
+  }
+
+  const shade = await stack.evaluate((el) => {
+    const fold = el.querySelector<HTMLElement>('.paper-fold--active')!;
+    const sheet = getComputedStyle(fold.parentElement!);
+    const x = Number.parseFloat(sheet.getPropertyValue('--paper-fold-x'));
+    const y = Number.parseFloat(sheet.getPropertyValue('--paper-fold-y'));
+    const peaks = [...getComputedStyle(fold).backgroundImage.matchAll(/rgba\(0, 0, 0, ([\d.]+)\) ([\d.-]+)px/g)]
+      .map((match) => ({ alpha: Number(match[1]), at: Number(match[2]) }))
+      .filter((stop) => stop.alpha > 0.2)
+      .sort((a, b) => a.at - b.at);
+    return { approaching: !fold.parentElement!.classList.contains('paper-front'), rest: x * Math.sin(Math.atan2(y, x)), peaks };
+  });
+  await page.mouse.up();
+
+  expect(shade.approaching, 'the page is still on its way over').toBe(true);
+  // Two creases carry a dark stop: the moving one, nearer the corner in the flap's own box,
+  // and the resting one the fold started from.
+  expect(shade.peaks).toHaveLength(2);
+  const [moving, resting] = shade.peaks as [typeof shade.peaks[0], typeof shade.peaks[0]];
+  expect(Math.abs(resting.at - shade.rest)).toBeLessThan(1);
+  expect(moving.at).toBeLessThan(shade.rest - 20);
+  expect(moving.alpha).toBeGreaterThan(0.2);
+});
+
+test('the dog-ear is drawn while the flip is still landing', async ({ page }) => {
+  const stack = playgroundStack(page);
+  await stack.scrollIntoViewIfNeeded();
+  await dogEarShown(stack);
+
+  // Watch from inside the page. A flip renumbers --paper-page-index halfway through and only
+  // hands the flap over at the very end, so what matters is the paper: from the renumber on, the
+  // page at the front must have a flap of its own, and it must be drawn well before the flip
+  // lands. The flap's width is --paper-fold-x, so its painted size measures the reveal too.
+  //
+  // How soon is read from the reveal's own start, not from the first frame that shows it: a
+  // loaded machine hands out frames late, and the frame that catches the flap drawn could come
+  // well after the paper was. The reveal is a CSS animation, so its start time and delay say when
+  // the corner began to curl up, to within the one frame it takes an animation to start.
+  const watch = stack.evaluate((el) => new Promise<{
+    bareFrames: number, revealFrom: number, landing: boolean, flapCount: number,
+  }>((resolve, reject) => {
+    const pages = [...el.children] as HTMLElement[];
+    const frontPage = () => pages.find((p) => p.style.getPropertyValue('--paper-page-index').trim() === '1')!;
+    const started = frontPage();
+    const deadline = performance.now() + 10_000;
+    let restacked = 0;
+    let bareFrames = 0;
+    const tick = () => {
+      const front = frontPage();
+      if (!restacked && front !== started) restacked = performance.now();
+      if (restacked) {
+        const flap = front.querySelector<HTMLElement>('.paper-fold');
+        if (!flap) bareFrames += 1;
+        // 2cm is the resting dog-ear, so a fifth of that is unmistakably paper, not a hairline
+        if (flap && flap.getBoundingClientRect().width > 20) {
+          const reveal = front.getAnimations()
+            .find((animation) => (animation as CSSAnimation).animationName === 'paper-fold-reveal');
+          if (!reveal || reveal.startTime === null) {
+            reject(new Error('the dog-ear was drawn without its reveal'));
+            return;
+          }
+          resolve({
+            bareFrames,
+            revealFrom: Number(reveal.startTime) + Number(reveal.effect!.getTiming().delay ?? 0) - restacked,
+            landing: !!el.querySelector('.paper-fold--active'),
+            flapCount: el.querySelectorAll('.paper-fold').length,
+          });
+          return;
+        }
+      }
+      if (performance.now() > deadline) {
+        reject(new Error(restacked ? 'the dog-ear never came back' : 'the stack never turned a page'));
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }));
+
+  await stack.focus();
+  await page.keyboard.press('ArrowRight');
+  const seen = await watch;
+
+  expect(seen.bareFrames, 'frames where the front page had no flap at all').toBe(0);
+  // The stylesheet holds a page's first reveal back half a second; a flip must not bring that wait along
+  expect(seen.revealFrom, 'ms from the renumber to the dog-ear starting to curl up').toBeLessThan(400);
+  expect(seen.landing, 'the flipped sheet is still folding away').toBe(true);
+  // One flap is the real one finishing the flip, the other the stand-in holding the new front
+  // page's dog-ear until it is free.
+  expect(seen.flapCount).toBe(2);
+
+  // And the stand-in gives way rather than piling up.
+  await expect(stack.locator('.paper-fold')).toHaveCount(1, { timeout: 2500 });
+  await expect(stack.locator('.paper-fold--stand-in')).toHaveCount(0);
+});
+
+// The dog-ear's own size, read the way the script writes it while dragging or resting.
+const foldSize = (stack: Locator) => stack.locator('.paper-front').evaluate((sheet) => {
+  const style = getComputedStyle(sheet);
+  return {
+    x: parseFloat(style.getPropertyValue('--paper-fold-x')),
+    y: parseFloat(style.getPropertyValue('--paper-fold-y')),
+  };
+});
+
+// Drags the front page's dog-ear through a sequence of corner-relative offsets from the grab
+// point (in CSS px, +x right / +y down), a handful of pointermove events per leg so the stack
+// sees the travel rather than a single jump. Leaves the button down; callers release it.
+const dragFold = async (page: Page, stack: Locator, legs: { dx: number, dy: number }[]): Promise<{ x: number, y: number }> => {
+  const grip = await flapGrip(stack);
+  await page.mouse.move(grip.x, grip.y);
+  await page.mouse.down();
+  for (const { dx, dy } of legs) {
+    const steps = 8;
+    for (let i = 1; i <= steps; i += 1) {
+      await page.mouse.move(grip.x + (dx * i) / steps, grip.y + (dy * i) / steps);
+      await page.waitForTimeout(20);
+    }
+  }
+  return grip;
+};
+
+test.describe('a drag that pulls the wrong way cancels', () => {
+  // The pulse that periodically grows the resting dog-ear would otherwise change the size a grab
+  // starts from, independently of anything a drag does.
+  test.use({ reducedMotion: 'reduce' });
+
+  test('80px straight down-right from the grab cancels: no flip, no fold left behind', async ({ page }) => {
+    const stack = playgroundStack(page);
+    await stack.scrollIntoViewIfNeeded();
+    await dogEarShown(stack);
+
+    const before = await frontPageIndex(stack);
+    const restBefore = await foldSize(stack);
+
+    // Grabbing the corner and pulling it further away from the page, down and right, the
+    // opposite of the fold, runs the tip toward the near-zero singularity in the fold's size from
+    // its tip: --paper-fold-x/-y would rocket up rather than shrink smoothly (a fifth again the
+    // resting size six pixels out along the outward axis, and past 300px by twelve before
+    // flipping negative). 80px clears the 10px outward margin many times over, so the drag gives
+    // up long before any of that is reached.
+    await dragFold(page, stack, [{ dx: 80, dy: 80 }]);
+    await page.mouse.up();
+    await expect.poll(async () => {
+      const rest = await foldSize(stack);
+      return Math.max(Math.abs(rest.x - restBefore.x), Math.abs(rest.y - restBefore.y));
+    }, { message: 'the fold never eased back to rest' }).toBeLessThan(0.5);
+
+    expect(await frontPageIndex(stack), 'front page unchanged, no flip').toBe(before);
+    const restAfter = await foldSize(stack);
+    expect(restAfter.x, '--paper-fold-x back at rest').toBeCloseTo(restBefore.x, 0);
+    expect(restAfter.y, '--paper-fold-y back at rest').toBeCloseTo(restBefore.y, 0);
+  });
+
+  test('a small wobble the wrong way on grab, then a strong pull inward, still turns the page', async ({ page }) => {
+    const stack = playgroundStack(page);
+    await stack.scrollIntoViewIfNeeded();
+    await dogEarShown(stack);
+
+    const before = await frontPageIndex(stack);
+
+    // A hand settling onto the corner before it pulls, a few pixels the wrong way, well inside
+    // the 10px outward margin, must not cancel the drag that follows: only outward travel past
+    // the margin does, and a pointer that comes back inside it keeps its drag. The recovery pull
+    // is well past the commit point.
+    await dragFold(page, stack, [{ dx: 5, dy: 5 }, { dx: -395, dy: -395 }]);
+    await page.mouse.up();
+
+    await expect.poll(() => frontPageIndex(stack), { message: 'the turn still committed', timeout: 2500 }).not.toBe(before);
+  });
+
+  test('a normal forward drag still turns the page', async ({ page }) => {
+    const stack = playgroundStack(page);
+    await stack.scrollIntoViewIfNeeded();
+    await dogEarShown(stack);
+
+    const before = await frontPageIndex(stack);
+    const sheet = (await stack.locator('.paper-front').boundingBox())!;
+    await dragFold(page, stack, [{ dx: -sheet.width * 0.6, dy: -sheet.height * 0.6 }]);
+    await page.mouse.up();
+
+    await expect.poll(() => frontPageIndex(stack), { message: 'the turn committed', timeout: 2500 }).not.toBe(before);
+  });
+});
+
+// The latest frame, within the next two seconds, where the flap is still drawn by script (the
+// inline clip-path a drag or a settle glide writes each frame), in ms from the start; -1 if none.
+const flapGlideMs = (stack: Locator) => stack.evaluate((st) => new Promise<number>((done) => {
+  const fold = st.querySelector<HTMLElement>('.paper-fold')!;
+  const start = performance.now();
+  let last = -1;
+  const tick = (now: number) => {
+    if (fold.style.clipPath !== '' || fold.classList.contains('paper-fold--active')) last = now - start;
+    if (now - start < 2000) requestAnimationFrame(tick);
+    else done(Math.round(last));
+  };
+  requestAnimationFrame(tick);
+}));
+
+// A grab that never moves has nothing to hand back. Once a gesture has come to rest, the sheet
+// keeps its resting --paper-fold-x/-y inline for good, and a release must not read that as a drag
+// and play the whole 1s settle glide back to where the fold already lay.
+test('a tap on the flap after a drag lets go at once, while the drag itself glides', async ({ page }) => {
+  const stack = playgroundStack(page);
+  await stack.scrollIntoViewIfNeeded();
+  await dogEarShown(stack);
+
+  await dragFold(page, stack, [{ dx: -40, dy: -40 }]);
+  const glide = flapGlideMs(stack);
+  await page.mouse.up();
+  expect(await glide, 'a real drag settles with a glide').toBeGreaterThan(200);
+
+  const grip = await flapGrip(stack);
+  await page.mouse.move(grip.x, grip.y);
+  const tap = flapGlideMs(stack);
+  await page.mouse.down();
+  await page.mouse.up();
+  expect(await tap, 'a tap runs no glide').toBe(-1);
+});
+
+// The hint rides the flap's centre, and a flap pulled out to the sheet's left edge has its centre
+// on that edge: the hint must not sit half off the paper there.
+test('the flip hint stays on the sheet when the flap is pulled out to its edge', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const stack = playgroundStack(page);
+  await stack.scrollIntoViewIfNeeded();
+  await dogEarShown(stack);
+
+  const sheet = (await stack.locator('.paper-front').boundingBox())!;
+  await dragFold(page, stack, [{ dx: -sheet.width * 1.3, dy: -sheet.height * 0.1 }]);
+  const hint = stack.locator('.paper-front > .paper-flip-hint');
+  await expect(hint).toHaveCSS('opacity', '1');
+  const box = (await hint.boundingBox())!;
+  await page.mouse.up();
+
+  expect(box.x).toBeGreaterThanOrEqual(sheet.x + 16);
+  expect(box.y).toBeGreaterThanOrEqual(sheet.y + 16);
+  expect(box.x + box.width).toBeLessThanOrEqual(sheet.x + sheet.width - 16);
+  expect(box.y + box.height).toBeLessThanOrEqual(sheet.y + sheet.height - 16);
+});
+
+test.describe('without JS', { tag: '@noscript' }, () => {
+  test('the stylesheet registers the fold properties', async ({ page }) => {
+    // A registered property computes to its typed initial value on an element that never sets it
+    const values = await page.locator('body').evaluate((body) => {
+      const style = getComputedStyle(body);
+      return ['--paper-fold-x', '--paper-pin-x', '--paper-pile-lean', '--paper-page-index', '--paper-turn-ease']
+        .map((name) => style.getPropertyValue(name).trim());
+    });
+    expect(values).toEqual(['0px', '0px', '0deg', '1', '1']);
+  });
+});
