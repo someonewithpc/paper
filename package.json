@@ -64,7 +64,12 @@
     "dog-ear",
     "carousel",
     "custom-element",
-    "astro-component"
+    "astro-component",
+    "react",
+    "vue",
+    "svelte",
+    "solid",
+    "astro"
   ],
   "scripts": {
     "build": "npm run build:js && npm run build:svelte && npm run build:solid && npm run build:css",
