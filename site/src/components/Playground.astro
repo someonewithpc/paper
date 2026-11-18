@@ -397,6 +397,7 @@ const interactions = [
     const options = optionsFor(mode, startPage);
     controller = options.mode === 'book' ? createPaper(root, options) : createPaper(root, options);
     code.textContent = callFor(options);
+    document.dispatchEvent(new CustomEvent('playground:create', { detail: { root, options } }));
     for (const type of ['paper:change', 'paper:settle', 'paper:turnend'] as const) root.addEventListener(type, showStateSoon);
     showStateSoon();
   }
@@ -414,5 +415,6 @@ const interactions = [
     if (action === 'rebuild') build();
   });
 
-  build();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build, { once: true });
+  else build();
 </script>

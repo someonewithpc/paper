@@ -1,4 +1,5 @@
 ---
+import EventTape from '../components/EventTape.astro';
 import FoldBook from '../components/FoldBook.astro';
 import Hero from '../components/Hero.astro';
 import Masthead from '../components/Masthead.astro';
@@ -16,6 +17,8 @@ import Base from '../layouts/Base.astro';
   <main>
     <Hero />
     <FoldBook />
-    <Playground />
+    <Playground>
+      <EventTape />
+    </Playground>
   </main>
 </Base>

@@ -1,0 +1,163 @@
+<div class="tape sheet-paper">
+  <div class="tape-head">
+    <h3 id="tape-title">Events</h3>
+    <button class="clear" type="button" hidden>Clear</button>
+  </div>
+  <p class="tape-empty">Turn a page anywhere on this page and its <code>paper:*</code> events land here, newest first.</p>
+  <div class="tape-scroll" role="log" aria-live="off" aria-labelledby="tape-title" tabindex="0">
+    <ol class="tape-list"></ol>
+  </div>
+</div>
+
+<style>
+  .tape {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    align-self: stretch;
+    min-width: 0;
+    max-height: 44rem;
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+
+  @media (min-width: 60rem) and (max-width: 79.99rem) {
+    .tape {
+      grid-column: 1 / -1;
+      max-height: 22rem;
+    }
+  }
+
+  .tape-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem 0.5rem;
+    border-bottom: 1px dashed var(--paper-edge);
+  }
+
+  h3 {
+    font-size: 0.9375rem;
+  }
+
+  .clear {
+    min-height: 2rem;
+    padding: 0.1rem 0.6rem;
+    border: 1px solid var(--paper-edge);
+    border-radius: 3px;
+    background: transparent;
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .tape-empty {
+    padding: 0.75rem 1rem;
+    font-family: var(--font-text);
+    font-size: 0.875rem;
+    color: var(--ink-soft);
+  }
+
+  .tape-empty[hidden] {
+    display: none;
+  }
+
+  .tape-scroll {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .tape-list {
+    margin: 0;
+    padding: 0 1rem 0.75rem;
+    list-style: none;
+  }
+
+  .tape-list :global(li) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.6rem;
+    padding-block: 0.45rem;
+    border-bottom: 1px dotted var(--paper-edge);
+  }
+
+  .tape-list :global(.when) {
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tape-list :global(.type) {
+    font-weight: 700;
+  }
+
+  .tape-list :global(.type[data-type='createPaper']) {
+    color: var(--pencil);
+  }
+
+  .tape-list :global(.who),
+  .tape-list :global(.detail) {
+    grid-column: 2;
+    overflow-wrap: anywhere;
+  }
+
+  .tape-list :global(.who) {
+    font-family: var(--font-display);
+    color: var(--ink-soft);
+  }
+
+  @media (scripting: none) {
+    .tape {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const list = document.querySelector<HTMLOListElement>('.tape-list')!;
+  const empty = document.querySelector<HTMLElement>('.tape-empty')!;
+  const clear = document.querySelector<HTMLButtonElement>('.tape .clear')!;
+  const started = performance.now();
+  const limit = 80;
+
+  const valueOf = (value: unknown) =>
+    Array.isArray(value) ? `[${value.join(', ')}]` : typeof value === 'string' ? `'${value}'` : String(value);
+
+  function write(type: string, who: string, detail: Record<string, unknown>) {
+    const item = document.createElement('li');
+    const seconds = ((performance.now() - started) / 1000).toFixed(2);
+    const parts: [string, string][] = [
+      ['when', `${seconds} s`],
+      ['type', type],
+      ['who', who],
+      ['detail', Object.entries(detail).map(([key, value]) => `${key}: ${valueOf(value)}`).join(', ')],
+    ];
+    for (const [name, text] of parts) {
+      const span = document.createElement('span');
+      span.className = name;
+      span.textContent = text;
+      if (name === 'type') span.dataset['type'] = type;
+      item.append(span);
+    }
+    list.prepend(item);
+    while (list.childElementCount > limit) list.lastElementChild!.remove();
+    empty.hidden = true;
+  }
+
+  const nameOf = (target: EventTarget | null) =>
+    target instanceof Element ? (target.getAttribute('aria-label') ?? target.id ?? 'paper') : 'paper';
+
+  for (const type of ['paper:turnstart', 'paper:turnend', 'paper:change', 'paper:settle'] as const) {
+    document.addEventListener(type, (event) => write(type, nameOf(event.target), { ...(event as CustomEvent<Record<string, unknown>>).detail }));
+  }
+  document.addEventListener('playground:create', (event) => {
+    const { root, options } = (event as CustomEvent<{ root: Element; options: Record<string, unknown> }>).detail;
+    write('createPaper', nameOf(root), { mode: options['mode'], startPage: options['startPage'] });
+  });
+
+  clear.hidden = false;
+  clear.addEventListener('click', () => {
+    list.replaceChildren();
+    empty.hidden = false;
+  });
+</script>
