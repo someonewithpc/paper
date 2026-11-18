@@ -1,0 +1,6 @@
+import { createSSRApp } from 'vue';
+import { renderToString } from 'vue/server-renderer';
+
+import { App } from './app.js';
+
+export const render = () => renderToString(createSSRApp(App));

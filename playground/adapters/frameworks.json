@@ -1,3 +1,12 @@
 {
-  "react": { "title": "React adapter", "server": "server.tsx", "client": "client.tsx" }
+  "react": {
+    "title": "React adapter",
+    "server": "server.tsx",
+    "client": "client.tsx"
+  },
+  "vue": {
+    "title": "Vue adapter",
+    "server": "server.ts",
+    "client": "client.ts"
+  }
 }
