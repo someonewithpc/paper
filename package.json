@@ -4,6 +4,14 @@
   "description": "A stack of paper pages you turn by folding the corner, or a book you turn across the spine, with a CSS carousel when scripting is off",
   "license": "GPL-3.0-or-later",
   "author": "Hugo Sales <hugo@hsal.es>",
+  "homepage": "https://paper.hsal.es",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/someonewithpc/paper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/someonewithpc/paper/issues"
+  },
   "type": "module",
   "files": [
     "dist",
