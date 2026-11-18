@@ -8,6 +8,8 @@ It also does books. In [book mode](#book-mode) you drag a page corner across the
 
 The library has no dependencies and no framework. It ships ESM, TypeScript types and one plain CSS file. Components for React, Vue, Svelte, Solid and Astro come in the same package (see [Frameworks](#frameworks)).
 
+[paper.hsal.es](https://paper.hsal.es) runs it: a stack and a book to turn, and the options, events and custom properties to try live.
+
 ## Install
 
 ```sh
