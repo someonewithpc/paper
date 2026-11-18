@@ -1,0 +1,418 @@
+---
+import { PaperBook, PaperStack } from '@hsal/paper/astro';
+
+const sheets = ['Drag the dog-ear', 'Press the arrow keys', 'Scroll sideways', 'Swipe with a finger', 'Use the buttons'];
+const leaves = ['Specimen', 'Left page', 'Right page', 'Left page', 'Right page', 'Back cover'];
+
+const interactions = [
+  { name: 'drag', label: 'Drag' },
+  { name: 'backGrab', label: 'Drag the folded-back corner', mode: 'stack' },
+  { name: 'keyboard', label: 'Arrow keys' },
+  { name: 'wheel', label: 'Sideways wheel and trackpad' },
+  { name: 'swipe', label: 'Swipe' },
+  { name: 'tease', label: 'Tease when the pointer comes near' },
+];
+---
+
+<section class="section wrap" aria-labelledby="playground-title">
+  <div class="section-head">
+    <h2 id="playground-title">Try the options</h2>
+    <p>
+      Options have no live setters. A change here destroys the controller and calls <code>createPaper</code> again on
+      the same markup, at the page you were on. The code under the paper is the call it makes.
+    </p>
+  </div>
+
+  <div class="playground">
+    <p class="no-script-note">The options need JavaScript. With it off, the playground's stack and book are the carousels the no-script styles make.</p>
+    <form id="playground-form" class="options sheet-paper" aria-label="Options">
+      <fieldset>
+        <legend>Mode</legend>
+        <label><input type="radio" name="mode" value="stack" checked /> Stack</label>
+        <label><input type="radio" name="mode" value="book" /> Book</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Interactions</legend>
+        {interactions.map(({ name, label, mode }) => (
+          <label data-mode={mode}><input type="checkbox" name={name} checked /> {label}</label>
+        ))}
+      </fieldset>
+
+      <fieldset data-mode="stack">
+        <legend>Stack</legend>
+        <label><input type="checkbox" name="clip" checked /> Paper clip</label>
+        <label><input type="checkbox" name="hint" checked /> Arrows on the flap</label>
+        <label><input type="checkbox" name="wrap" checked /> Wrap from the last page to the first</label>
+      </fieldset>
+
+      <fieldset data-mode="book">
+        <legend>Book</legend>
+        <label class="select">
+          Display
+          <select name="display">
+            <option value="auto">Auto</option>
+            <option value="single">Single</option>
+            <option value="double" selected>Double</option>
+          </select>
+        </label>
+        <label><input type="checkbox" name="hardCovers" /> Hard covers</label>
+        <label><input type="checkbox" name="shading" checked /> Shading</label>
+        <label><input type="checkbox" name="autoCenter" checked /> Center the covers</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Motion</legend>
+        <label><input type="radio" name="reducedMotion" value="system" checked /> Follow the system</label>
+        <label><input type="radio" name="reducedMotion" value="reduce" /> Reduce</label>
+      </fieldset>
+    </form>
+
+    <div class="bench">
+      <div class="stage" data-stage="stack">
+        <PaperStack label="Options stack" class="stage-stack" enhance={false}>
+          {sheets.map((line, index) => (
+            <section class="specimen">
+              <p class="numeral">{index + 1}</p>
+              <p>{line}</p>
+            </section>
+          ))}
+        </PaperStack>
+      </div>
+      <div class="stage" data-stage="book" hidden>
+        <PaperBook label="Options book" class="stage-book" display="double" enhance={false}>
+          {leaves.map((line, index) => (
+            <section class:list={['specimen', { cover: index === 0 || index === leaves.length - 1 }]}>
+              <p class="numeral">{index === 0 || index === leaves.length - 1 ? '' : index}</p>
+              <p>{line}</p>
+            </section>
+          ))}
+        </PaperBook>
+      </div>
+
+      <div class="actions">
+        <button class="button" type="button" data-action="prev">Previous page</button>
+        <button class="button" type="button" data-action="next">Next page</button>
+        <button class="button" type="button" data-action="rebuild">Destroy and create again</button>
+      </div>
+
+      <div class="readouts">
+        <div class="readout sheet-paper">
+          <h3>The call</h3>
+          <pre><code id="playground-code">createPaper(root);</code></pre>
+        </div>
+        <div class="readout sheet-paper">
+          <h3><code>paper.state</code></h3>
+          <pre><code id="playground-state" aria-live="off">{'{}'}</code></pre>
+        </div>
+      </div>
+    </div>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .playground {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .no-script-note {
+    display: none;
+  }
+
+  @media (min-width: 60rem) {
+    .playground {
+      grid-template-columns: 17rem minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  @media (min-width: 80rem) {
+    .playground {
+      grid-template-columns: 17rem minmax(0, 1fr) 17rem;
+    }
+  }
+
+  .options {
+    display: grid;
+    gap: 1.25rem;
+    padding: 1.25rem 1.25rem 1.5rem;
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+  }
+
+  fieldset {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  fieldset:disabled,
+  label:has(:disabled) {
+    color: var(--ink-soft);
+  }
+
+  legend {
+    margin-bottom: 0.4rem;
+    padding: 0;
+    font-weight: 700;
+    font-stretch: 90%;
+    font-size: 1rem;
+  }
+
+  label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    line-height: 1.3;
+    cursor: pointer;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    translate: 0 0.15em;
+    accent-color: var(--ink);
+  }
+
+  .select {
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  select {
+    min-height: 2rem;
+    padding: 0.15rem 0.4rem;
+    border: 1px solid var(--paper-edge);
+    border-radius: 3px;
+    background: var(--paper);
+  }
+
+  .bench {
+    display: grid;
+    gap: 1.5rem;
+    min-width: 0;
+  }
+
+  @media (max-width: 59.99rem) {
+    .bench {
+      order: -1;
+    }
+  }
+
+  .stage {
+    padding-top: 2rem;
+  }
+
+  .stage :global(.stage-stack) {
+    aspect-ratio: 3 / 2;
+    max-width: 34rem;
+  }
+
+  .stage :global(.stage-book) {
+    aspect-ratio: 296 / 210;
+    max-width: 44rem;
+  }
+
+  .specimen {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 0.5rem;
+    container-type: inline-size;
+    color: var(--ink);
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: clamp(0.75rem, 5cqi, 1.125rem);
+  }
+
+  .specimen .numeral {
+    font-size: 30cqi;
+    font-stretch: 62%;
+    font-weight: 800;
+    line-height: 0.85;
+    color: var(--ink-soft);
+  }
+
+  .specimen.cover {
+    background: var(--cloth);
+    color: var(--cloth-ink);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .readouts {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 40rem) {
+    .readouts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .readout {
+    min-width: 0;
+  }
+
+  .readout h3 {
+    padding: 0.75rem 1rem 0;
+    font-size: 0.9375rem;
+  }
+
+  .readout h3 code {
+    padding: 0;
+    background: none;
+    font-size: 0.95em;
+  }
+
+  .readout pre {
+    margin: 0;
+    padding: 0.5rem 1rem 1rem;
+    overflow-x: auto;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+
+  @media (scripting: none) {
+    .no-script-note {
+      display: block;
+      max-width: var(--measure);
+    }
+
+    .options,
+    .actions,
+    .readouts {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { createPaper, type PaperBookOptions, type PaperController, type PaperStackOptions } from '@hsal/paper';
+
+  type Mode = 'stack' | 'book';
+
+  const form = document.querySelector<HTMLFormElement>('#playground-form')!;
+  const code = document.querySelector<HTMLElement>('#playground-code')!;
+  const stateOut = document.querySelector<HTMLElement>('#playground-state')!;
+  const stages = {
+    stack: document.querySelector<HTMLElement>('[data-stage="stack"]')!,
+    book: document.querySelector<HTMLElement>('[data-stage="book"]')!,
+  };
+  const templates = { stack: stages.stack.innerHTML, book: stages.book.innerHTML };
+
+  let controller: PaperController | null = null;
+  let mode: Mode = 'stack';
+
+  const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement | RadioNodeList;
+  const checked = (name: string) => (field(name) as HTMLInputElement).checked;
+  const value = (name: string) => (field(name) as RadioNodeList).value;
+
+  function interactionsFor(forMode: Mode) {
+    const names = ['drag', 'keyboard', 'wheel', 'swipe', 'tease', ...(forMode === 'stack' ? ['backGrab'] : [])];
+    return Object.fromEntries(names.map((name) => [name, checked(name)]));
+  }
+
+  function optionsFor(forMode: Mode, startPage: number): PaperStackOptions | PaperBookOptions {
+    const reducedMotion = value('reducedMotion') as 'system' | 'reduce';
+    if (forMode === 'stack') {
+      return {
+        mode: 'stack',
+        startPage,
+        wrap: checked('wrap'),
+        interactions: interactionsFor('stack'),
+        decorations: { clip: checked('clip'), hint: checked('hint') },
+        reducedMotion,
+      };
+    }
+    return {
+      mode: 'book',
+      startPage,
+      display: value('display') as 'auto' | 'single' | 'double',
+      hardCovers: checked('hardCovers'),
+      shading: checked('shading'),
+      autoCenter: checked('autoCenter'),
+      interactions: interactionsFor('book'),
+      reducedMotion,
+    };
+  }
+
+  const defaults: Record<string, unknown> = {
+    startPage: 0, wrap: true, reducedMotion: 'system', display: 'auto', hardCovers: false, shading: true, autoCenter: true,
+  };
+
+  function literal(input: unknown): string {
+    if (Array.isArray(input)) return `[${input.join(', ')}]`;
+    return typeof input === 'string' ? `'${input}'` : String(input);
+  }
+
+  function callFor(options: PaperStackOptions | PaperBookOptions): string {
+    const lines: string[] = [];
+    for (const [key, entry] of Object.entries(options)) {
+      if (key === 'mode') {
+        if (entry === 'book') lines.push(`mode: 'book',`);
+      } else if (entry && typeof entry === 'object') {
+        const off = Object.entries(entry).filter(([, on]) => on === false);
+        if (off.length) lines.push(`${key}: { ${off.map(([name]) => `${name}: false`).join(', ')} },`);
+      } else if (defaults[key] !== entry) {
+        lines.push(`${key}: ${literal(entry)},`);
+      }
+    }
+    return lines.length ? `createPaper(root, {\n${lines.map((line) => `  ${line}`).join('\n')}\n});` : 'createPaper(root);';
+  }
+
+  function showState() {
+    const entries = Object.entries(controller?.state ?? {}).map(([key, entry]) => `  ${key}: ${literal(entry)},`);
+    stateOut.textContent = `{\n${entries.join('\n')}\n}`;
+  }
+
+  const showStateSoon = () => requestAnimationFrame(showState);
+
+  function build() {
+    const sameMode = controller?.mode === mode;
+    const startPage = sameMode ? controller!.state.index : 0;
+    controller?.destroy();
+    for (const key of ['stack', 'book'] as const) {
+      stages[key].hidden = key !== mode;
+      stages[key].innerHTML = templates[key];
+    }
+    for (const element of form.querySelectorAll<HTMLElement>('[data-mode]')) {
+      const off = element.dataset['mode'] !== mode;
+      if (element instanceof HTMLFieldSetElement) element.disabled = off;
+      else element.querySelector('input')!.disabled = off;
+    }
+    const root = stages[mode].querySelector<HTMLElement>('[data-paper-stack], [data-paper-book]')!;
+    const options = optionsFor(mode, startPage);
+    controller = options.mode === 'book' ? createPaper(root, options) : createPaper(root, options);
+    code.textContent = callFor(options);
+    for (const type of ['paper:change', 'paper:settle', 'paper:turnend'] as const) root.addEventListener(type, showStateSoon);
+    showStateSoon();
+  }
+
+  form.addEventListener('change', (event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.name === 'mode') mode = target.value as Mode;
+    build();
+  });
+
+  document.querySelector('.actions')!.addEventListener('click', (event) => {
+    const action = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-action]')?.dataset['action'];
+    if (action === 'prev') void controller?.prev();
+    if (action === 'next') void controller?.next();
+    if (action === 'rebuild') build();
+  });
+
+  build();
+</script>
