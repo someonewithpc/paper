@@ -1,15 +1,14 @@
-// Builds the Astro playground against the package, linked in as @someonewithpc/paper the way the adapter
-// pages are, and serves the build.
-import { join } from 'node:path';
+// Builds the Astro playground against the workspace's @someonewithpc/paper-astro, the way the
+// adapter pages use theirs, and serves the build.
+import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { build, preview } from 'astro';
 
-import { linkSelf, root } from './link-self.mjs';
-
+const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const playground = join(root, 'playground/astro');
 const port = Number(process.env.PORT ?? 4323);
 
-await linkSelf(playground);
 await build({ root: playground, logLevel: 'warn' });
 await preview({ root: playground, logLevel: 'warn', server: { port } });
 console.log(`astro playground on http://localhost:${port}/`);

@@ -1,0 +1,13 @@
+{
+  "name": "paper-playground",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@someonewithpc/paper": "^0.1.0",
+    "@someonewithpc/paper-astro": "^0.1.0",
+    "@someonewithpc/paper-react": "^0.1.0",
+    "@someonewithpc/paper-solid": "^0.1.0",
+    "@someonewithpc/paper-svelte": "^0.1.0",
+    "@someonewithpc/paper-vue": "^0.1.0"
+  }
+}

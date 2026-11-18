@@ -10,14 +10,15 @@
     "packages/svelte",
     "packages/solid",
     "packages/astro",
-    "site"
+    "site",
+    "playground"
   ],
   "scripts": {
     "build": "npm run build -w @someonewithpc/paper && npm run build -w packages/react -w packages/vue -w packages/svelte -w packages/solid -w packages/astro",
     "clean": "npm run clean --workspaces --if-present",
     "pretypecheck": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit && svelte-check --tsconfig ./packages/svelte/tsconfig.json --threshold warning && npm run check:astro",
-    "check:astro": "node scripts/link-self.mjs playground/astro && astro check --root playground/astro",
+    "check:astro": "astro check --root playground/astro",
     "pretest": "npm run build",
     "test": "vitest run",
     "test:e2e": "playwright test",
