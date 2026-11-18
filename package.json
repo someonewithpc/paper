@@ -19,6 +19,10 @@
       "types": "./dist/element.d.ts",
       "default": "./dist/element.js"
     },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "default": "./dist/react/index.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
@@ -48,11 +52,23 @@
     "playground": "node scripts/serve.mjs",
     "prepack": "npm run clean && npm run build"
   },
+  "peerDependencies": {
+    "react": "^18.2.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@playwright/test": "^1.65.1",
     "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "publint": "^0.3.25",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "sass": "^1.108.2",
     "typescript": "^6.0.3",
     "vitest": "^5.1.1"

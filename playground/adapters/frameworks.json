@@ -1,1 +1,3 @@
-{}
+{
+  "react": { "title": "React adapter", "server": "server.tsx", "client": "client.tsx" }
+}

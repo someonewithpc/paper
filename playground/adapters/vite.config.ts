@@ -6,6 +6,6 @@ export default defineConfig({
   // which would reload the page under a running spec.
   optimizeDeps: {
     noDiscovery: true,
-    include: [],
+    include: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom/client'],
   },
 });
