@@ -1,0 +1,326 @@
+---
+import { Code } from 'astro:components';
+
+interface Framework {
+  id: string;
+  name: string;
+  note: string;
+  file: string;
+  lang: 'tsx' | 'vue' | 'svelte' | 'astro' | 'html';
+  code: string;
+}
+
+const frameworks: Framework[] = [
+  {
+    id: 'react',
+    name: 'React',
+    note: 'React 19, marked as a client module. Each child element is a page. The `ref` is the controller, and `usePaper` gives you the controller and its state.',
+    file: 'Notes.tsx',
+    lang: 'tsx',
+    code: `import { PaperStack, usePaper } from '@hsal/paper/react';
+import '@hsal/paper/styles.css';
+
+export function Notes({ days }: { days: Day[] }) {
+  const paper = usePaper();
+  return (
+    <>
+      <PaperStack ref={paper.ref} label="Field notes" wrap={false} onChange={(detail) => console.log(detail.index)}>
+        {days.map((day) => <section key={day.id}><h2>{day.title}</h2></section>)}
+      </PaperStack>
+      <p>Page {(paper.state?.index ?? 0) + 1} of {days.length}</p>
+    </>
+  );
+}`,
+  },
+  {
+    id: 'vue',
+    name: 'Vue',
+    note: 'Vue 3.3 and later, as compiled render functions, so your bundler needs no loader. Each element of the default slot is a page, `v-for` included. The callbacks are the events `turn-start`, `turn-end`, `change` and `settle`.',
+    file: 'Atlas.vue',
+    lang: 'vue',
+    code: `<script setup lang="ts">
+import { PaperBook, usePaper } from '@hsal/paper/vue';
+import '@hsal/paper/styles.css';
+
+defineProps<{ plates: Plate[] }>();
+const { ref: book, state } = usePaper<'book'>();
+</script>
+
+<template>
+  <PaperBook :ref="book" label="Atlas" display="double" @change="(detail) => console.log(detail.spread)">
+    <section v-for="plate in plates" :key="plate.id"><h2>{{ plate.title }}</h2></section>
+  </PaperBook>
+  <p>Spread {{ state?.spread }}</p>
+</template>`,
+  },
+  {
+    id: 'svelte',
+    name: 'Svelte',
+    note: "Svelte 5. A snippet can't be split into elements, so the pages come from a `page` snippet that runs once per index up to `pageCount`. `controller` and `state` are bindable.",
+    file: 'Notes.svelte',
+    lang: 'svelte',
+    code: `<script lang="ts">
+  import { PaperStack, type PaperStackState } from '@hsal/paper/svelte';
+  import '@hsal/paper/styles.css';
+
+  let { days }: { days: Day[] } = $props();
+  let sheet: PaperStackState | null = $state(null);
+</script>
+
+<PaperStack label="Field notes" pageCount={days.length} bind:state={sheet} onChange={(detail) => console.log(detail.index)}>
+  {#snippet page(index)}
+    <section><h2>{days[index].title}</h2></section>
+  {/snippet}
+</PaperStack>`,
+  },
+  {
+    id: 'solid',
+    name: 'Solid',
+    note: "Solid 1.8 and later. Solid 2's compiler plugins don't take the package yet. Each child element is a page, and `ref` gets each controller made, then `null` when it goes.",
+    file: 'Atlas.tsx',
+    lang: 'tsx',
+    code: `import { For } from 'solid-js';
+import { PaperBook, usePaper } from '@hsal/paper/solid';
+import '@hsal/paper/styles.css';
+
+export function Atlas(props: { plates: Plate[] }) {
+  const book = usePaper<'book'>();
+  return (
+    <>
+      <PaperBook ref={book.ref} label="Atlas" hardCovers onSettle={(detail) => console.log(detail.spread)}>
+        <For each={props.plates}>{(plate) => <section><h2>{plate.title}</h2></section>}</For>
+      </PaperBook>
+      <p>Spread {book.state()?.spread}</p>
+    </>
+  );
+}`,
+  },
+  {
+    id: 'astro',
+    name: 'Astro',
+    note: 'Astro 5 and later. The components import the stylesheet and start the script themselves. Options with a `data-paper-*` attribute are props. For the rest, listen for the `paper:*` events on the root, or get the controller with `paperOf` from `@hsal/paper/astro/client`.',
+    file: 'Sheets.astro',
+    lang: 'astro',
+    code: `---
+import { PaperStack } from '@hsal/paper/astro';
+import Sheet from '../components/Sheet.astro';
+
+const sheets = [{ title: 'Monday' }, { title: 'Tuesday', surface: '#1f4f8f' }];
+---
+
+<PaperStack label="Sheets" pageCount={sheets.length} surfaces={sheets.map((sheet) => sheet.surface)}>
+  {(index: number) => <Sheet title={sheets[index].title} />}
+</PaperStack>`,
+  },
+  {
+    id: 'html',
+    name: 'HTML',
+    note: 'No build step. `<paper-stack>` and `<paper-book>` are custom elements, and their options go in `data-paper-*` attributes. The `data-paper-stack` attribute styles the carousel before the element loads.',
+    file: 'index.html',
+    lang: 'html',
+    code: `<link rel="stylesheet" href="https://unpkg.com/@hsal/paper/dist/styles.css">
+<script type="module" src="https://unpkg.com/@hsal/paper/dist/element.js"></script>
+
+<paper-stack data-paper-stack aria-label="Field notes" style="aspect-ratio: 2 / 1">
+  <section><h2>Monday</h2><p>…</p></section>
+  <section data-paper-surface="#1f4f8f"><h2>Tuesday</h2><p>…</p></section>
+  <section><h2>Wednesday</h2><p>…</p></section>
+</paper-stack>`,
+  },
+];
+---
+
+<section class="section wrap" aria-labelledby="frameworks-title">
+  <div class="section-head">
+    <h2 id="frameworks-title">Use it from your framework</h2>
+    <p>
+      One package, with an entry point for each of 5 frameworks and the custom elements for everything else. Each
+      framework is an optional peer dependency, so you install only <code>@hsal/paper</code>.
+    </p>
+  </div>
+
+  <div class="frameworks" data-tabs>
+    <div class="tabs" role="tablist" aria-label="Framework" hidden>
+      {frameworks.map(({ id, name }, index) => (
+        <button
+          type="button"
+          role="tab"
+          id={`tab-${id}`}
+          aria-controls={`panel-${id}`}
+          aria-selected={index === 0 ? 'true' : 'false'}
+          tabindex={index === 0 ? 0 : -1}
+        >
+          {name}
+        </button>
+      ))}
+    </div>
+
+    {frameworks.map(({ id, name, note, file, lang, code }) => (
+      <section class="panel sheet-paper" id={`panel-${id}`} aria-labelledby={`tab-${id}`} data-panel>
+        <h3 class="panel-title">{name}</h3>
+        <p class="note">{note.split('`').map((part, index) => (index % 2 ? <code>{part}</code> : part))}</p>
+        <div class="install">
+          <Code lang="sh" theme="css-variables" code="npm install @hsal/paper" />
+        </div>
+        <figure class="usage">
+          <figcaption>{file}</figcaption>
+          <Code lang={lang} theme="css-variables" code={code} />
+        </figure>
+      </section>
+    ))}
+  </div>
+</section>
+
+<style>
+  .frameworks {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .frameworks[data-tabs-ready] {
+    gap: 0;
+  }
+
+  .tabs {
+    gap: 0.25rem;
+    padding-inline: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs:not([hidden]) {
+    display: flex;
+  }
+
+  [role='tab'] {
+    flex: none;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.9rem 0.6rem;
+    border: 0;
+    border-radius: 6px 6px 0 0;
+    background: light-dark(#e9eee6, #1d302a);
+    color: var(--mat-ink);
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    translate: 0 3px;
+    transition: translate 120ms;
+  }
+
+  [role='tab']:hover {
+    translate: 0 0;
+  }
+
+  [role='tab'][aria-selected='true'] {
+    background: var(--paper);
+    color: var(--ink);
+    translate: 0 0;
+  }
+
+  [role='tab']:focus-visible {
+    outline-offset: -4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [role='tab'] {
+      transition: none;
+    }
+  }
+
+  .panel {
+    display: grid;
+    gap: 1rem;
+    padding: 1.5rem clamp(1rem, 3vw, 2rem) 1.75rem;
+    min-width: 0;
+  }
+
+  .panel[hidden] {
+    display: none;
+  }
+
+  [data-tabs-ready] .panel-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .note {
+    max-width: var(--measure);
+  }
+
+  .install,
+  .usage {
+    min-width: 0;
+    margin: 0;
+    border: 1px solid var(--paper-edge);
+    border-radius: 3px;
+  }
+
+  .install {
+    max-width: 24rem;
+  }
+
+  .install :global(.astro-code) {
+    padding-block: 0.6rem;
+  }
+
+  figcaption {
+    padding: 0.5rem 1.125rem;
+    border-bottom: 1px dashed var(--paper-edge);
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .tabs {
+      scroll-behavior: smooth;
+    }
+  }
+</style>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-tabs]')) {
+    const list = root.querySelector<HTMLElement>('[role="tablist"]')!;
+    const tabs = [...list.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[data-panel]')];
+
+    const select = (index: number, focus: boolean) => {
+      tabs.forEach((tab, at) => {
+        const on = at === index;
+        tab.setAttribute('aria-selected', String(on));
+        tab.tabIndex = on ? 0 : -1;
+        panels[at]!.hidden = !on;
+      });
+      if (!focus) return;
+      tabs[index]!.focus();
+      tabs[index]!.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    };
+
+    for (const panel of panels) {
+      panel.setAttribute('role', 'tabpanel');
+      panel.tabIndex = 0;
+    }
+    list.hidden = false;
+    root.toggleAttribute('data-tabs-ready', true);
+    select(0, false);
+
+    list.addEventListener('click', (event) => {
+      const tab = (event.target as Element).closest<HTMLButtonElement>('[role="tab"]');
+      if (tab) select(tabs.indexOf(tab), false);
+    });
+    list.addEventListener('keydown', (event) => {
+      const current = tabs.indexOf(document.activeElement as HTMLButtonElement);
+      const last = tabs.length - 1;
+      const next = { ArrowRight: current + 1, ArrowLeft: current - 1, Home: 0, End: last }[event.key];
+      if (next === undefined || current < 0) return;
+      event.preventDefault();
+      select((next + tabs.length) % tabs.length, true);
+    });
+  }
+</script>
