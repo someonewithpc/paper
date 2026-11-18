@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  DEFAULT_INTERACTIONS, dataAttributesOf, defaultAnnounce, mergeOptions, parseDataOptions, resolveStackOptions,
+  DEFAULT_BOOK_INTERACTIONS, DEFAULT_BOOK_STRINGS, DEFAULT_INTERACTIONS, dataAttributesOf, defaultAnnounce,
+  defaultBookAnnounce, mergeOptions, parseDataOptions, resolveBookOptions, resolveStackOptions,
 } from '../src/options.js';
 
 const dataset = (attributes: Record<string, string>) =>
@@ -100,5 +101,77 @@ describe('defaultAnnounce', () => {
   it('names the page by place and title', () => {
     expect(defaultAnnounce({ index: 1, count: 4, title: 'Notes', page: {} as HTMLElement })).toBe('Page 2 of 4: Notes');
     expect(defaultAnnounce({ index: 0, count: 4, title: undefined, page: {} as HTMLElement })).toBe('Page 1 of 4');
+  });
+});
+
+describe('book options', () => {
+  it('fill in the book defaults', () => {
+    const resolved = resolveBookOptions();
+    expect(resolved).toMatchObject({
+      mode: 'book', startPage: 0, display: 'auto', hardCovers: false, autoCenter: true, shading: true,
+      reducedMotion: 'system', strings: DEFAULT_BOOK_STRINGS,
+    });
+    expect(resolved.interactions).toEqual(DEFAULT_BOOK_INTERACTIONS);
+    expect(resolved.interactions).not.toHaveProperty('backGrab');
+  });
+
+  it('read the book attributes in book mode', () => {
+    const { options, errors } = parseDataOptions(dataset({
+      'data-paper-mode': 'book',
+      'data-paper-display': 'double',
+      'data-paper-hard-covers': '',
+      'data-paper-auto-center': 'false',
+      'data-paper-shading': 'false',
+      'data-paper-tease': 'false',
+      'data-paper-start-page': '3',
+    }));
+    expect(errors).toEqual([]);
+    expect(options).toEqual({
+      mode: 'book', display: 'double', hardCovers: true, autoCenter: false, shading: false,
+      interactions: { tease: false }, startPage: 3,
+    });
+  });
+
+  it('take the mode from code over the attribute', () => {
+    const { options, errors } = parseDataOptions(dataset({ 'data-paper-display': 'single' }), 'book');
+    expect(errors).toEqual([]);
+    expect(options).toEqual({ display: 'single' });
+  });
+
+  it('report attributes the mode does not take', () => {
+    const book = parseDataOptions(dataset({ 'data-paper-mode': 'book', 'data-paper-wrap': 'false', 'data-paper-back-grab': 'false', 'data-paper-clip': 'false' }));
+    expect(book.options).toEqual({ mode: 'book' });
+    expect(book.errors).toEqual([
+      'data-paper-wrap only applies in stack mode',
+      'data-paper-back-grab only applies in stack mode',
+      'data-paper-clip only applies in stack mode',
+    ]);
+    const stack = parseDataOptions(dataset({ 'data-paper-display': 'double', 'data-paper-hard-covers': '' }));
+    expect(stack.options).toEqual({});
+    expect(stack.errors).toEqual(['data-paper-hard-covers only applies in book mode', 'data-paper-display only applies in book mode']);
+  });
+
+  it('reject a display it does not know', () => {
+    expect(parseDataOptions(dataset({ 'data-paper-display': 'triple' }), 'book').errors)
+      .toEqual(['data-paper-display="triple" is not "single", "double" or "auto"']);
+  });
+
+  it('write what parseDataOptions reads back', () => {
+    const given = {
+      mode: 'book' as const, display: 'single' as const, hardCovers: true, autoCenter: false, shading: false,
+      startPage: 4, interactions: { wheel: false }, strings: { keys: 'Turn with the arrows' },
+    };
+    expect(parseDataOptions(dataset(dataAttributesOf(given)))).toEqual({ options: given, errors: [] });
+  });
+
+  it('merge code over attributes', () => {
+    expect(mergeOptions({ mode: 'book', display: 'double', interactions: { drag: false } }, { mode: 'book', interactions: { wheel: false } }))
+      .toEqual({ mode: 'book', display: 'double', interactions: { drag: false, wheel: false } });
+  });
+
+  it('announce one page or two', () => {
+    const page = {} as HTMLElement;
+    expect(defaultBookAnnounce({ index: 3, count: 10, title: 'Plates', page, spread: 2, pages: [3, 4] })).toBe('Pages 4 and 5 of 10: Plates');
+    expect(defaultBookAnnounce({ index: 0, count: 10, title: undefined, page, spread: 0, pages: [0] })).toBe('Page 1 of 10');
   });
 });

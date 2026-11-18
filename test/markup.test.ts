@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { pageIndexOf, renderStack, stackMarkup } from '../src/markup.js';
+import { bookMarkup, pageIndexOf, renderBook, renderStack, spreadPartnerOf, stackMarkup } from '../src/markup.js';
 
 const pages = ['<section>One</section>', '<section>Two</section>', { html: '<section>Three</section>', surface: 'navy' }];
 
@@ -73,5 +73,35 @@ describe('stackMarkup', () => {
 describe('pageIndexOf', () => {
   it('rotates the order so the start page is 1', () => {
     expect([0, 1, 2, 3].map((page) => pageIndexOf(page, 1, 4))).toEqual([4, 1, 2, 3]);
+  });
+});
+
+describe('renderBook', () => {
+  const leaves = ['<section>One</section>', { html: '<section>Two</section>', surface: 'navy' }, '<section>Three</section>', '<section>Four</section>'];
+
+  it('wraps each page with its shade and marks the book', () => {
+    const html = renderBook({ label: 'Atlas', pages: leaves });
+    expect(html).toMatch(/^<div data-paper-book role="group" aria-label="Atlas" data-paper-mode="book" style="--paper-page-count: 4">/);
+    expect(html.match(/class="paper-book-page"/g)).toHaveLength(4);
+    expect(html.match(/<div class="paper-book-shade" aria-hidden="true"><\/div><\/div>/g)).toHaveLength(4);
+    expect(html).toContain('<div class="paper-book-page" style="--paper-surface: navy"><section>Two</section>');
+    expect(html).toMatch(/<span hidden id="paper-keys-[a-z0-9]+" data-paper-keys>The left and right arrow keys turn the pages, Home and End go to the covers<\/span>$/);
+  });
+
+  it('shows the start page and its partner until the script places them', () => {
+    const at = (start: number) => bookMarkup({ pageCount: 5, options: { startPage: start } }).pages.map((page) => page.attributes['data-paper-place']);
+    expect(at(0)).toEqual(['view', undefined, undefined, undefined, undefined]);
+    expect(at(1)).toEqual([undefined, 'view', 'pair', undefined, undefined]);
+    expect(at(4)).toEqual([undefined, undefined, undefined, 'pair', 'view']);
+    expect(spreadPartnerOf(3, 4)).toBe(undefined);
+  });
+
+  it('writes the book options down', () => {
+    const html = renderBook({ pages: leaves, options: { display: 'double', hardCovers: true, startPage: 2 } });
+    expect(html).toContain('data-paper-mode="book" data-paper-start-page="2" data-paper-hard-covers="true" data-paper-display="double"');
+  });
+
+  it('refuses a start page it does not have', () => {
+    expect(() => bookMarkup({ pageCount: 2, options: { startPage: 2 } })).toThrow(RangeError);
   });
 });

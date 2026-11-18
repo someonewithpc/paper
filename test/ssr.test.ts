@@ -6,7 +6,9 @@ describe('on a server', () => {
     const core = await import('../src/index.js');
     const element = await import('../src/element.js');
     expect(typeof core.renderStack).toBe('function');
+    expect(typeof core.renderBook).toBe('function');
     expect(typeof element.definePaperStack).toBe('function');
+    expect(typeof element.definePaperBook).toBe('function');
   });
 
   it('refuses to enhance without a DOM', async () => {
