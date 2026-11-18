@@ -1,9 +1,10 @@
-import { enhanceStack, isEnhanced } from './enhance.js';
-import { mergeOptions, parseDataOptions, resolveStackOptions } from './options.js';
+import { attachBook, bookState, nextBookSettle, type BookDriver } from './book/book.js';
+import { enhanceBook, enhanceStack, isBookEnhanced, isEnhanced } from './enhance.js';
+import { mergeOptions, parseDataOptions, resolveBookOptions, resolveStackOptions } from './options.js';
 import { attachStack, nextSettle, refreshStack, stackState, type StackDriver } from './stack/stack.js';
 import type {
-  PaperController, PaperEventListener, PaperEventType, PaperGoToOptions, PaperMode, PaperModeOptions,
-  PaperOptions, PaperStackOptions,
+  PaperBookEventMap, PaperBookOptions, PaperController, PaperEventListener, PaperEventType, PaperGoToOptions,
+  PaperMode, PaperModeOptions, PaperOptions, PaperStackOptions,
 } from './types.js';
 
 type ModeFactory<M extends PaperMode> = (root: HTMLElement, options: PaperModeOptions[M]) => PaperController<M>;
@@ -12,22 +13,25 @@ type ModeFactory<M extends PaperMode> = (root: HTMLElement, options: PaperModeOp
 // factory here, and the compiler asks for both.
 const modes: { [M in PaperMode]: ModeFactory<M> } = {
   stack: (root, options) => createStack(root, options),
+  book: (root, options) => createBook(root, options),
 };
 
 const modeOf = (options: PaperOptions): PaperMode => options.mode ?? 'stack';
 
 /**
- * Turns `root` into a paper stack and returns its controller. `root`'s element children become
- * the pages, unless it already carries the markup {@link renderStack} writes. `data-paper-*`
- * attributes on `root` give options too; the ones passed here win.
+ * Turns `root` into a paper stack or book and returns its controller. `root`'s element children
+ * become the pages, unless it already carries the markup {@link renderStack} or {@link renderBook}
+ * writes. `data-paper-*` attributes on `root` give options too; the ones passed here win, `mode`
+ * included.
  */
+export function createPaper(root: HTMLElement, options: PaperBookOptions): PaperController<'book'>;
 export function createPaper(root: HTMLElement, options?: PaperStackOptions): PaperController<'stack'>;
 export function createPaper(root: HTMLElement, options?: PaperOptions): PaperController;
 export function createPaper(root: HTMLElement, options: PaperOptions = {}): PaperController {
-  if (typeof window === 'undefined') throw new Error('createPaper needs a DOM; render the markup with renderStack on the server');
+  if (typeof window === 'undefined') throw new Error('createPaper needs a DOM; render the markup with renderStack or renderBook on the server');
   const { options: fromData, errors } = parseDataOptions(root.dataset, options.mode);
   for (const error of errors) console.warn(`[paper] ${error}, ignored`);
-  const merged = mergeOptions(fromData, options) as PaperOptions;
+  const merged = mergeOptions(fromData, options);
   const mode = modeOf(merged);
   const factory = modes[mode] as ModeFactory<typeof mode>;
   return factory(root, merged);
@@ -241,6 +245,91 @@ function createStack(root: HTMLElement, given: PaperStackOptions): PaperControll
     refresh: () => refreshStack(root),
     on: <K extends PaperEventType>(type: K, listener: PaperEventListener<K>) => wiring.on(type, listener as (event: Event) => void),
     off: <K extends PaperEventType>(type: K, listener: PaperEventListener<K>) => wiring.off(type, listener as (event: Event) => void),
+    destroy() {
+      if (destroyed) return;
+      destroyed = true;
+      aborter.abort();
+      wiring.restore();
+    },
+  };
+  return controller;
+}
+
+function createBook(root: HTMLElement, given: PaperBookOptions): PaperController<'book'> {
+  if (!isBookEnhanced(root)) enhanceBook(root, given);
+  const options = resolveBookOptions(given);
+  const count = root.childElementCount;
+  if (!Number.isInteger(options.startPage) || options.startPage < 0 || options.startPage >= count) {
+    throw new RangeError(`startPage must be a page index from 0 to ${count - 1}, got ${options.startPage}`);
+  }
+
+  const aborter = new AbortController();
+  const { signal } = aborter;
+  const wiring = wireRoot(root, {
+    strings: options.strings,
+    describedBy: options.describedBy,
+    keyboard: options.interactions.keyboard,
+    announce: Boolean(options.announce),
+    callbacks: [
+      ['paper:turnstart', options.onTurnStart],
+      ['paper:turnend', options.onTurnEnd],
+      ['paper:change', options.onChange],
+      ['paper:settle', options.onSettle],
+    ],
+  }, signal);
+  const { set, status } = wiring;
+
+  // The stylesheet lays the book out from these, so options given in code are written down too.
+  set('data-paper-display', options.display);
+  if (!options.shading) set('data-paper-shading', 'false');
+  if (options.reducedMotion === 'reduce') set('data-paper-reduced-motion', 'reduce');
+
+  let driver: BookDriver | null = null;
+  let destroyed = false;
+  const ready = documentReady().then(() => {
+    if (destroyed) return;
+    driver = attachBook(root, { options, status, signal });
+    // --paper-book-double-from is usually in rem, which a theme can change.
+    watchTheme(options.themeAttributes, () => driver?.refresh(), signal);
+  });
+
+  const settled = async (started: boolean): Promise<boolean> => {
+    if (!started) return false;
+    await nextBookSettle(root);
+    return !destroyed;
+  };
+
+  const controller: PaperController<'book'> = {
+    root,
+    mode: 'book',
+    get state() {
+      return bookState(root);
+    },
+    async next() {
+      await ready;
+      return settled(Boolean(driver && !destroyed && driver.turn(true)));
+    },
+    async prev() {
+      await ready;
+      return settled(Boolean(driver && !destroyed && driver.turn(false)));
+    },
+    async goTo(index: number, { animate = true }: PaperGoToOptions = {}) {
+      await ready;
+      if (!driver || destroyed) return false;
+      const pages = root.childElementCount;
+      if (!Number.isInteger(index) || index < 0 || index >= pages) {
+        throw new RangeError(`goTo needs a page index from 0 to ${pages - 1}, got ${index}`);
+      }
+      const spread = driver.spreadOfPage(index);
+      if (spread === bookState(root).spread) return true;
+      if (driver.busy() || !driver.go(spread, animate)) return false;
+      // A jump to the neighbour settles at once; the turn after it settles later.
+      if (bookState(root).spread !== spread) await nextBookSettle(root);
+      return !destroyed;
+    },
+    refresh: () => driver?.refresh(),
+    on: <K extends PaperEventType>(type: K, listener: PaperEventListener<K, PaperBookEventMap>) => wiring.on(type, listener as (event: Event) => void),
+    off: <K extends PaperEventType>(type: K, listener: PaperEventListener<K, PaperBookEventMap>) => wiring.off(type, listener as (event: Event) => void),
     destroy() {
       if (destroyed) return;
       destroyed = true;

@@ -3,9 +3,6 @@ import type {
   PaperInteractions, PaperMode, PaperOptions, PaperStackOptions, PaperStrings,
 } from './types.js';
 
-// Book mode isn't one of PaperModeOptions until its driver lands with it.
-type AnyOptions = PaperOptions | PaperBookOptions;
-type AnyMode = PaperMode | 'book';
 
 export const DEFAULT_INTERACTIONS: Readonly<PaperInteractions> = Object.freeze({
   drag: true, backGrab: true, keyboard: true, wheel: true, swipe: true, tease: true,
@@ -158,7 +155,7 @@ const BOOLEAN_OPTIONS = {
   paperHardCovers: { name: 'hardCovers', modes: ['book'] },
   paperAutoCenter: { name: 'autoCenter', modes: ['book'] },
   paperShading: { name: 'shading', modes: ['book'] },
-} as const satisfies Record<string, { name: string, modes: readonly AnyMode[] }>;
+} as const satisfies Record<string, { name: string, modes: readonly PaperMode[] }>;
 
 const BOOLEAN_INTERACTIONS = {
   paperDrag: { name: 'drag', modes: ['stack', 'book'] },
@@ -167,7 +164,7 @@ const BOOLEAN_INTERACTIONS = {
   paperWheel: { name: 'wheel', modes: ['stack', 'book'] },
   paperSwipe: { name: 'swipe', modes: ['stack', 'book'] },
   paperTease: { name: 'tease', modes: ['stack', 'book'] },
-} as const satisfies Record<string, { name: keyof PaperInteractions, modes: readonly AnyMode[] }>;
+} as const satisfies Record<string, { name: keyof PaperInteractions, modes: readonly PaperMode[] }>;
 
 const BOOLEAN_DECORATIONS = {
   paperClip: 'clip',
@@ -179,7 +176,7 @@ const STRING_OPTIONS = {
   paperKeys: 'keys',
 } as const satisfies Record<string, keyof PaperStrings>;
 
-const MODES: readonly AnyMode[] = ['stack', 'book'];
+const MODES: readonly PaperMode[] = ['stack', 'book'];
 const DISPLAYS: readonly PaperBookDisplay[] = ['single', 'double', 'auto'];
 
 const attributeName = (key: string): string =>
@@ -188,20 +185,20 @@ const attributeName = (key: string): string =>
 const parseBoolean = (value: string): boolean | undefined =>
   value === '' || value === 'true' ? true : value === 'false' ? false : undefined;
 
-const isMode = (value: string): value is AnyMode => (MODES as readonly string[]).includes(value);
+const isMode = (value: string): value is PaperMode => (MODES as readonly string[]).includes(value);
 
 /**
  * Reads the `data-paper-*` option attributes off an element's dataset. Pure: pass any record of
  * strings. The mode is `mode` if given, else `data-paper-mode`, else `stack`. An attribute with a
  * value it can't take, or one the mode doesn't take, is reported in `errors` and left out.
  */
-export function parseDataOptions(dataset: Dataset, mode?: AnyMode): ParsedDataOptions {
+export function parseDataOptions(dataset: Dataset, mode?: PaperMode): ParsedDataOptions {
   const errors: string[] = [];
   const invalid = (key: string, value: string, expected: string) =>
     errors.push(`${attributeName(key)}="${value}" is not ${expected}`);
 
   const raw = dataset['paperMode'];
-  let own: AnyMode | undefined;
+  let own: PaperMode | undefined;
   if (raw !== undefined) {
     if (isMode(raw)) own = raw;
     else invalid('paperMode', raw, '"stack" or "book"');
@@ -209,7 +206,7 @@ export function parseDataOptions(dataset: Dataset, mode?: AnyMode): ParsedDataOp
   const active = mode ?? own ?? 'stack';
   const options: Record<string, unknown> = {};
   if (own !== undefined) options['mode'] = own;
-  const takes = (key: string, modes: readonly AnyMode[]): boolean => {
+  const takes = (key: string, modes: readonly PaperMode[]): boolean => {
     if (modes.includes(active)) return true;
     errors.push(`${attributeName(key)} only applies in ${modes.join(' and ')} mode`);
     return false;
@@ -282,7 +279,7 @@ export function parseDataOptions(dataset: Dataset, mode?: AnyMode): ParsedDataOp
  * later. Functions can't be written down, so callbacks, `announce` and `pageTitle` are left out,
  * as is a `ResizeHoldSource`.
  */
-export function dataAttributesOf(options: AnyOptions): Record<string, string> {
+export function dataAttributesOf(options: PaperOptions): Record<string, string> {
   const attributes: Record<string, string> = {};
   const set = (key: string, value: string | number | boolean) => {
     attributes[attributeName(key)] = String(value);
@@ -317,7 +314,7 @@ export function dataAttributesOf(options: AnyOptions): Record<string, string> {
 }
 
 /** Options from attributes, overridden by the ones given in code, key by key in the nested groups. */
-export function mergeOptions(fromData: PaperDataOptions, given: AnyOptions = {}): AnyOptions {
+export function mergeOptions(fromData: PaperDataOptions, given: PaperOptions = {}): PaperOptions {
   const data = fromData as Record<string, unknown>;
   const code = given as Record<string, unknown>;
   const merged: Record<string, unknown> = { ...data, ...code };
@@ -325,5 +322,5 @@ export function mergeOptions(fromData: PaperDataOptions, given: AnyOptions = {})
     const nested = { ...(data[name] as object | undefined), ...(code[name] as object | undefined) };
     if (Object.keys(nested).length) merged[name] = nested;
   }
-  return merged as AnyOptions;
+  return merged as PaperOptions;
 }

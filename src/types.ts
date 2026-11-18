@@ -192,6 +192,7 @@ export interface PaperBookOptions extends PaperCommonOptions<PaperBookEventMap, 
  */
 export interface PaperModeOptions {
   stack: PaperStackOptions;
+  book: PaperBookOptions;
 }
 
 export type PaperMode = keyof PaperModeOptions;
