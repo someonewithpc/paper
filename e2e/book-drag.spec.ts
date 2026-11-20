@@ -87,6 +87,25 @@ test('while it is dragged the front page is cut at the crease and the back page 
   await expect(book).toHaveAttribute('data-paper-settled', '');
 });
 
+test('scrolling on while a wheel turn plays out starts a turn of its own', async ({ page }) => {
+  await page.clock.install();
+  await page.setViewportSize({ width: 1200, height: 1000 });
+  const book = await openBook(page, 'display=double&start=1');
+  const box = (await book.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await holdClock(page);
+  await wheel(page, book, box.width * 0.05, 4);
+  // The wheel falls quiet and the turn plays out, and a nudge too small to turn a leaf comes in
+  // before it lands.
+  await page.clock.runFor(300);
+  expect(await bookState(book)).toMatchObject({ turning: true, spread: 1 });
+  await wheel(page, book, box.width * 0.05);
+  await page.clock.runFor(3000);
+  expect(await bookState(book)).toMatchObject({ settled: true, turning: false, spread: 2 });
+  const changes = await page.evaluate(() => window.paperEvents!.filter((e) => e.type === 'paper:change').length);
+  expect(changes).toBe(1);
+});
+
 test('in single display a drag turns one page, and the left edge brings it back', async ({ page }) => {
   const book = await openBook(page, 'display=single&width=480px');
   await dragCorner(page, book, 'right', 1.6);

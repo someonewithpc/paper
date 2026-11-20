@@ -700,7 +700,10 @@ export function attachBook(root: HTMLElement, { options, status, signal }: BookS
       const sideways = e.deltaX * unit;
       let gesture = book.gesture;
       if (gesture && gesture.kind !== 'wheel' && gesture.kind !== 'tease') return;
-      if (!gesture || gesture.kind === 'tease') {
+      // A wheel turn already let go plays out on its own. Scrolling on starts the next turn, as on
+      // the stack: fed into the one easing out, the travel was lost when it landed, or its idle
+      // wait released it a second time and turned two leaves.
+      if (!gesture || gesture.released || gesture.kind === 'tease') {
         if (Math.abs(sideways) <= Math.abs(e.deltaY * unit)) return;
         settleNow();
         gesture = begin('wheel', sideways > 0, 'bottom');
