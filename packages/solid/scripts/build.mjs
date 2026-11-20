@@ -5,7 +5,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 import { transformAsync } from '@babel/core';
-import solid from 'babel-preset-solid';
+import solid from '@solidjs/babel-plugin';
 
 const dir = fileURLToPath(new URL('../dist/', import.meta.url));
 const source = await readFile(`${dir}index.jsx`, 'utf8');
@@ -15,7 +15,7 @@ for (const [file, generate] of [['index.js', 'dom'], ['server.js', 'ssr']]) {
     filename: `${dir}index.jsx`,
     babelrc: false,
     configFile: false,
-    presets: [[solid, { generate, hydratable: true }]],
+    plugins: [[solid, { generate, hydratable: true }]],
     sourceMaps: false,
   });
   await writeFile(`${dir}${file}`, result.code);

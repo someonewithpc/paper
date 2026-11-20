@@ -1,6 +1,6 @@
+import solid from '@solidjs/vite-plugin';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
-import solid from 'vite-plugin-solid';
 
 export default defineConfig({
   logLevel: 'warn',
@@ -18,6 +18,6 @@ export default defineConfig({
   // which would reload the page under a running spec.
   optimizeDeps: {
     noDiscovery: true,
-    include: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom/client', 'vue', 'solid-js', 'solid-js/web'],
+    include: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom/client', 'vue', 'solid-js', '@solidjs/web'],
   },
 });

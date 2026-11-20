@@ -53,9 +53,10 @@
     "@someonewithpc/paper": "^0.1.0"
   },
   "peerDependencies": {
-    "solid-js": "^1.8.0"
+    "@solidjs/web": "^2.0.0",
+    "solid-js": "^2.0.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12.0"
   }
 }

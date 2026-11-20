@@ -1,4 +1,4 @@
-/** @jsxImportSource solid-js */
+/** @jsxImportSource @solidjs/web */
 // Type-level tests: `npm run typecheck` checks them, and vitest runs them as no-ops.
 import { describe, expectTypeOf, it } from 'vitest';
 import type { PaperBookState, PaperController, PaperStackState } from '@someonewithpc/paper';

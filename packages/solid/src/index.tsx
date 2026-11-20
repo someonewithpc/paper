@@ -1,9 +1,8 @@
-/** @jsxImportSource solid-js */
+/** @jsxImportSource @solidjs/web */
 import {
-  children as resolveChildren, createEffect, createMemo, createSignal, For, onCleanup, Show, splitProps as split, untrack,
-  type Accessor, type JSX,
+  children as resolveChildren, createEffect, createMemo, createSignal, For, omit, Show, untrack, type Accessor,
 } from 'solid-js';
-import { Dynamic } from 'solid-js/web';
+import { Dynamic, type JSX } from '@solidjs/web';
 
 import {
   createFor, liveOptions, markupKey, markupOf, optionsKey, splitProps, watchState, type AdapterOptions,
@@ -45,8 +44,8 @@ const isPage = (node: unknown): boolean =>
     : node instanceof Element;
 
 function Paper<M extends PaperMode>(props: PaperComponentProps<M> & AdapterOptions[M] & { mode: M }) {
-  const [own, rest] = split(props, OWN);
-  const resolved = resolveChildren(() => own.children);
+  const rest = omit(props, ...OWN);
+  const resolved = resolveChildren(() => props.children);
   const pages = createMemo(() => resolved.toArray().filter(isPage));
   const options = createMemo(() => {
     const { mode: _, ...others } = rest as Record<string, unknown>;
@@ -57,41 +56,41 @@ function Paper<M extends PaperMode>(props: PaperComponentProps<M> & AdapterOptio
     return splitProps(props.mode, others).rest;
   });
   const key = createMemo(() => optionsKey(options()));
+  // Markup of the same shape is no change, so the root stays.
   const markup = createMemo(() => {
-    const input = { pageCount: pages().length, tag: own.as, label: own.label, id: own.id, surfaces: own.surfaces };
+    const input = { pageCount: pages().length, tag: props.as, label: props.label, id: props.id, surfaces: props.surfaces };
     void key();
     return input.pageCount ? markupOf(props.mode, input, untrack(options)) : null;
-  });
-  const shape = createMemo(() => {
-    const value = markup();
-    return value ? markupKey(value) : '';
-  });
+  }, { equals: (a, b) => (a && markupKey(a)) === (b && markupKey(b)) });
 
   const [root, setRoot] = createSignal<HTMLElement>();
-  createEffect(() => {
-    void shape();
-    void key();
-    const element = root();
-    if (!element) return;
-    const created = untrack(() => createFor(props.mode, element, liveOptions(options(), () => options())));
-    untrack(() => own.ref?.(created));
-    onCleanup(() => {
-      created.destroy();
-      untrack(() => own.ref?.(null));
-    });
-  });
+  createEffect(
+    () => {
+      void markup();
+      void key();
+      return root();
+    },
+    (element) => {
+      if (!element) return;
+      const created = untrack(() => createFor(props.mode, element, liveOptions(options(), () => options())));
+      untrack(() => props.ref?.(created));
+      return () => {
+        created.destroy();
+        untrack(() => props.ref?.(null));
+      };
+    },
+  );
 
   const rootProps = (ownClass: string | undefined, ownStyle: string | undefined) => {
-    const className = [ownClass, own.class].filter(Boolean).join(' ');
-    const style = [ownStyle, typeof own.style === 'string' ? own.style : ''].filter(Boolean).join('; ');
-    return { ...(own.id ? { id: own.id } : {}), ...(className ? { class: className } : {}), ...(style ? { style } : {}) };
+    const className = [ownClass, props.class].filter(Boolean).join(' ');
+    const style = [ownStyle, typeof props.style === 'string' ? props.style : ''].filter(Boolean).join('; ');
+    return { ...(props.id ? { id: props.id } : {}), ...(className ? { class: className } : {}), ...(style ? { style } : {}) };
   };
 
   // A new shape is a new root: the script has moved things around inside the old one.
   return (
-    <Show when={shape()} keyed>
-      {(_) => {
-        const current = markup()!;
+    <Show when={markup()} keyed>
+      {(current) => {
         const { class: ownClass, style: ownStyle, ...rootAttributes } = current.attributes;
         return (
           <>
@@ -136,13 +135,12 @@ export interface UsePaper<M extends PaperMode> {
 export function usePaper<M extends PaperMode = 'stack'>(): UsePaper<M> {
   const [controller, setController] = createSignal<PaperController<M> | null>(null);
   const [state, setState] = createSignal<PaperStateMap[M] | null>(null);
-  createEffect(() => {
-    const current = controller();
+  createEffect(controller, (current) => {
     if (!current) {
       setState(null);
       return;
     }
-    onCleanup(watchState(current, (next) => setState(() => next)));
+    return watchState(current, (next) => setState(() => next));
   });
   return { ref: (value) => setController(() => value), controller, state };
 }
