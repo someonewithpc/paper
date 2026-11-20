@@ -424,12 +424,12 @@ npm run site:dev       # the landing page in site/, from Astro's dev server
 npm run site:build     # the library, then the landing page into site/dist/
 npm run site:deploy    # site:build, then wrangler deploy to paper.js.hsal.es
 npm run test:e2e -w site  # the landing page's smoke and axe specs
-npm run release        # check:package, then npm publish of the six packages
+npm run release        # build, check:package, then publish the six packages with one 2FA code
 ```
 
 The e2e run also serves the adapter pages from Vite, rendered on the server and hydrated, at `http://localhost:4322/<framework>/`, and a built Astro site at `http://localhost:4323/`. `node scripts/serve-adapters.mjs` and `node scripts/serve-astro.mjs` start them on their own.
 
-The packages share one version, and each adapter depends on `@someonewithpc/paper` with a caret range on it. To release a new version, set it in every `packages/*/package.json` and in the adapters' ranges, run `npm install` to update the lockfile, then `npm run release`, which runs `npm publish --workspaces --access public` once the checks pass. npm skips `site/` and `playground/`, which are private.
+The packages share one version, and each adapter depends on `@someonewithpc/paper` with a caret range on it. To release a new version, set it in every `packages/*/package.json` and in the adapters' ranges, run `npm install` to update the lockfile, then `npm run release`. It builds and checks the packages, asks once for a code from your authenticator app, and publishes each package with that code. If the code expires partway, it asks for a new one and goes on from the package it stopped at. Packages already on npm at their version are skipped, so a release that stopped halfway can be run again. An empty answer leaves npm to ask for 2FA in the browser for each package, and `NPM_OTP=<code>` skips the prompt. `npm run release -- --dry-run` does everything except the upload.
 
 ## License
 

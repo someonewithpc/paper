@@ -27,7 +27,7 @@
     "site:dev": "npm run build && npm run dev -w site",
     "site:build": "npm run build && npm run build -w site",
     "site:deploy": "npm run site:build && npm run deploy -w site",
-    "release": "npm run check:package && npm publish --workspaces --access public"
+    "release": "node scripts/release.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
