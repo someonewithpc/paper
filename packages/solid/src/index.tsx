@@ -7,7 +7,7 @@ import { Dynamic, type JSX } from '@solidjs/web';
 import {
   createFor, liveOptions, markupKey, markupOf, optionsKey, splitProps, watchState, type AdapterOptions,
 } from '@someonewithpc/paper/adapter';
-import type { Attributes, MarkupElement, PaperController, PaperMode, PaperStateMap } from '@someonewithpc/paper';
+import type { MarkupElement, PaperController, PaperMode, PaperStateMap } from '@someonewithpc/paper';
 
 /** What both components take besides the mode's options. Other HTML attributes go on the root. */
 export interface PaperComponentProps<M extends PaperMode> extends Omit<JSX.HTMLAttributes<HTMLElement>, 'children' | 'onChange' | 'ref'> {
@@ -30,12 +30,8 @@ export type PaperBookProps = PaperComponentProps<'book'> & AdapterOptions['book'
 
 const OWN = ['children', 'as', 'label', 'id', 'surfaces', 'ref', 'class', 'style'] as const;
 
-// Solid takes an empty string for a boolean attribute as false.
-const withBooleans = (attributes: Attributes): Record<string, string | boolean> =>
-  'hidden' in attributes ? { ...attributes, hidden: true } : attributes;
-
 const Chrome = (props: { element: MarkupElement }) => (
-  <Dynamic component={props.element.tag} {...withBooleans(props.element.attributes)} innerHTML={props.element.html} />
+  <Dynamic component={props.element.tag} {...props.element.attributes} innerHTML={props.element.html} />
 );
 
 // Whitespace between pages is no page. On a server the children are strings and template objects.
