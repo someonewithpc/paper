@@ -352,7 +352,7 @@ Svelte 5. A snippet can't be split into elements, so the pages come from a `page
 
 ### Solid
 
-Solid 1.8 and later. Solid 2 came out in November 2026 and its compiler plugins don't take it yet. The package has the JSX source under the `solid` export condition, for vite-plugin-solid, and compiled DOM and server builds for the rest. Each child element is a page. `ref` is called with each controller made, and with `null` when it goes:
+Solid 2.0 and later, with `@solidjs/web`. The package has the JSX source under the `solid` export condition, for `@solidjs/vite-plugin`, and compiled DOM and server builds for the rest. Each child element is a page. `ref` is called with each controller made, and with `null` when it goes:
 
 ```tsx
 import { For } from 'solid-js';

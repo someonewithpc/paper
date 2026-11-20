@@ -8,9 +8,9 @@ Solid components for [@someonewithpc/paper](https://github.com/someonewithpc/pap
 npm install @someonewithpc/paper-solid
 ```
 
-`@someonewithpc/paper` comes with it. The peer dependency is Solid 1.8 or later. Solid 2 came out in November 2026 and its compiler plugins don't take it yet.
+`@someonewithpc/paper` comes with it. The peer dependencies are `solid-js` and `@solidjs/web` 2.0 or later. Solid 1 isn't supported, since code compiled for it imports `solid-js/web`, which Solid 2 doesn't have.
 
-The package has the JSX source under the `solid` export condition, for vite-plugin-solid, and compiled DOM and server builds for the rest.
+The package has the JSX source under the `solid` export condition, which `@solidjs/vite-plugin` 3 picks up and compiles with the rest of your app. Anything else gets the DOM build in browsers and the server build in Node, Deno and workers, both compiled with `@solidjs/babel-plugin` 2.
 
 ## Usage
 
