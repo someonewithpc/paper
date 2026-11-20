@@ -16,7 +16,9 @@ const port = Number(process.env.PORT ?? 4322);
 const vite = await createVite({
   configFile: join(playground, 'vite.config.ts'),
   root,
-  server: { middlewareMode: true, hmr: false },
+  // Vite's client connects to a socket even with HMR off. Its default port is shared, so a second
+  // server, as from another checkout, would take the pages' connections and refuse them.
+  server: { middlewareMode: true, hmr: false, ws: { port: port + 20000 } },
   appType: 'custom',
 });
 
