@@ -2,7 +2,7 @@
 import {
   children as resolveChildren, createEffect, createMemo, createSignal, For, omit, Show, untrack, type Accessor,
 } from 'solid-js';
-import { Dynamic, type JSX } from '@solidjs/web';
+import { dynamic, type JSX } from '@solidjs/web';
 
 import {
   createFor, liveOptions, markupKey, markupOf, optionsKey, splitProps, watchState, type AdapterOptions,
@@ -30,9 +30,10 @@ export type PaperBookProps = PaperComponentProps<'book'> & AdapterOptions['book'
 
 const OWN = ['children', 'as', 'label', 'id', 'surfaces', 'ref', 'class', 'style'] as const;
 
-const Chrome = (props: { element: MarkupElement }) => (
-  <Dynamic component={props.element.tag} {...props.element.attributes} innerHTML={props.element.html} />
-);
+function Chrome(props: { element: MarkupElement }) {
+  const Tag = dynamic(() => props.element.tag);
+  return <Tag {...props.element.attributes} innerHTML={props.element.html} />;
+}
 
 // Whitespace between pages is no page. On a server the children are strings and template objects.
 const isPage = (node: unknown): boolean =>
@@ -88,9 +89,10 @@ function Paper<M extends PaperMode>(props: PaperComponentProps<M> & AdapterOptio
     <Show when={markup()} keyed>
       {(current) => {
         const { class: ownClass, style: ownStyle, ...rootAttributes } = current.attributes;
+        const Root = dynamic(() => current.tag);
         return (
           <>
-            <Dynamic component={current.tag} {...rootAttributes} {...attributes()} {...rootProps(ownClass, ownStyle)} ref={setRoot}>
+            <Root {...rootAttributes} {...attributes()} {...rootProps(ownClass, ownStyle)} ref={setRoot}>
               <For each={current.pages}>
                 {(wrapper, index) => (
                   <div {...wrapper.attributes}>
@@ -100,7 +102,7 @@ function Paper<M extends PaperMode>(props: PaperComponentProps<M> & AdapterOptio
                   </div>
                 )}
               </For>
-            </Dynamic>
+            </Root>
             <For each={current.afterElements}>{(element) => <Chrome element={element} />}</For>
           </>
         );
